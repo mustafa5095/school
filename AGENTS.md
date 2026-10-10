@@ -21,7 +21,9 @@ Test rules:
   on internal variables. For the quiz maker that means: build, start, answer,
   finish, review, switch language at every screen, restart, download, open the
   downloaded file and play it, and the negative paths (bad JSON, empty
-  questions).
+  questions). Also cover the optional `after_test` and `author` lines
+  (present, absent, blank, and both languages) and the direction: an
+  English-only quiz must stay LTR, Kurdish content must render RTL.
 - Both languages must be checked wherever text can appear: page content, all
   buttons/labels, category badges, counters, scores and the review. Confirm the
   direction switches and that Kurdish uses Kurdish digits.
@@ -75,11 +77,29 @@ and keyboard navigation.
 Quiz content may be Kurdish, English, or both: each text field has a base key
 (Kurdish) and an English `_en` key. When both are present the quiz shows a
 Kurdish/English switch and follows the quiz's language for both content and
-chrome; when only one is present the quiz stays in that language.
+chrome; when only one is present the quiz stays in that language. `meta.language`
+(`en`, `ku`, `both`, `auto`) can force that behaviour; resolve it through the
+existing `applyLangMode` pipeline rather than reading `meta` directly, so per-field
+fallback (a quiz fixed to one language still falling back per field) is preserved.
+
+Optional `meta` extras, each with an `_en` key and the same per-language fallback:
+
+- `after_test` / `after_test_en` — message shown on the results screen after
+  finishing; newlines become separate paragraphs; hidden when empty.
+- `author` / `author_en` — shown as `Quiz Author - <name>` (Kurdish
+  `نووسەری تاقیکردنەوە - <name>`); hidden when absent or blank.
+
+Direction (RTL/LTR) is auto-detected from the text on screen, not from a flag:
+`meta.language: "ku"` forces RTL, otherwise `RTL_RE` decides per screen for both
+the page and the author line. When you add or change anything that renders
+text, call the direction refresh (`updateDir`/`applyDirection`) at the end of the
+render so an English-only quiz stays LTR and Kurdish content switches to RTL.
 
 The page can download the built quiz as a standalone HTML file (JSON embedded,
 no dependency on the maker), with an option to include a Home button that links
-to `index.html`.
+to `index.html`. The standalone file carries its own copy of the engine, so any
+change to rendering, language or direction must be ported to both the maker and
+the embedded standalone template, and both must be tested.
 
 ## Category descriptions
 
