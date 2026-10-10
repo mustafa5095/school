@@ -1,17 +1,18 @@
 <!DOCTYPE html>
 <!--
-  QUIZ MAKER (private tool, English only)
-  Paste a quiz JSON (see quiz-template.json) and get a playable quiz that works
-  exactly like quiz-2nd-arabicreligion.html: shuffled questions per category,
-  shuffled options, progress bar, per-category scores, review with explanations
-  and keyboard navigation.
+  QUIZ MAKER (private tool)
 
-  This page is intentionally not listed in files.json, so it does not show on
-  the dashboard. It is linked from README.md instead.
+  The BUILDER INTERFACE is English only, so this page is LTR and has no
+  language switch.
 
-  The interface is English. Quiz content may be Kurdish, English, or both: every
-  text field has a base key and an English `_en` key, and the interface shows
-  whichever is present (English preferred).
+  The QUIZ IT IS BUILT FROM supports both languages, exactly like
+  quiz-2nd-arabicreligion.html: if the JSON carries both Kurdish and English
+  text, the generated quiz shows a language switch and works in both; if it
+  carries only one language, the quiz stays in that language. RTL/LTR is chosen
+  to match the language in use.
+
+  This page is intentionally not listed in files.json (so it stays off the
+  dashboard). It is linked from README.md instead.
 -->
 <html lang="en" dir="ltr">
 <head>
@@ -30,12 +31,13 @@ textarea{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col items-center justify-center p-4">
 <div class="max-w-3xl w-full bg-slate-800 rounded-2xl shadow-2xl p-6 sm:p-8 border border-slate-700">
 
-  <!-- ================= Top bar: Home + editor ================= -->
+  <!-- ================= Top bar ================= -->
   <div class="flex justify-between items-center mb-6 gap-3">
     <div class="flex items-center gap-2">
       <a href="index.html" class="bg-slate-700 hover:bg-slate-600 text-white font-semibold py-2 px-4 rounded-xl text-sm transition">🏠 Home</a>
       <button type="button" id="editor-btn" class="bg-slate-700 hover:bg-slate-600 text-white font-semibold py-2 px-4 rounded-xl text-sm transition">✏️ Editor</button>
     </div>
+    <button type="button" id="download-btn" class="bg-emerald-700 hover:bg-emerald-600 text-white font-semibold py-2 px-4 rounded-xl text-sm transition">⬇️ Download Quiz</button>
   </div>
 
   <!-- ================= Builder view ================= -->
@@ -46,12 +48,19 @@ textarea{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
     </header>
 
     <div class="mb-4 bg-slate-700/50 p-4 rounded-xl border border-slate-600 text-slate-300 text-xs sm:text-sm leading-relaxed">
-      Format: title, subtitle and a list of questions. Each question has a category, a question, options, a correct index and an explanation. Any text may be Kurdish, English, or both.
+      Format: title, subtitle and a list of questions. Each question has a category, a question, options, a correct index and an explanation. Text may be Kurdish, English, or both: fill the base key for Kurdish and the <code class="text-emerald-300">_en</code> key for English, and the quiz will show a Kurdish/English switch.
     </div>
 
     <textarea id="json-input" spellcheck="false" rows="16"
       class="w-full bg-slate-900 border border-slate-700 rounded-xl p-4 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 transition"
       placeholder='{"meta":{...},"questions":[...]}'></textarea>
+
+    <div class="mt-4 flex flex-wrap items-center gap-4 text-sm text-slate-300">
+      <label class="flex items-center gap-2 cursor-pointer">
+        <input type="checkbox" id="home-toggle" class="w-4 h-4 accent-emerald-500" checked>
+        <span>Include a Home button in the downloaded quiz</span>
+      </label>
+    </div>
 
     <div id="error-box" class="hidden mt-4 bg-rose-950/40 border border-rose-800/60 text-rose-200 text-sm rounded-xl p-4 whitespace-pre-line"></div>
 
@@ -71,7 +80,7 @@ textarea{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
     </header>
 
     <div id="start-screen" class="text-center py-8">
-      <div class="mb-6 bg-slate-700/50 p-6 rounded-xl border border-slate-600 inline-block text-left">
+      <div class="mb-6 bg-slate-700/50 p-6 rounded-xl border border-slate-600 inline-block">
         <p id="start-count" class="text-lg font-medium mb-2"></p>
         <ul id="start-list" class="text-slate-300 text-sm space-y-1 inline-block"></ul>
       </div>
@@ -118,7 +127,7 @@ textarea{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
 "use strict";
 
 /* ============================================================
- * 1) UI strings (English interface)
+ * 1) Builder UI strings (English only) + shared quiz strings
  * ============================================================ */
 const UI = {
   title: "Quiz Maker",
@@ -145,6 +154,7 @@ const UI = {
   mustSelect: "Please select an option first!",
   score: (s, t) => `${s} of ${t} (${Math.round((s / t) * 100)}%)`,
   categoryScore: (cat, s, t) => `${cat}: ${s} of ${t}`,
+  langLabel: "🌐 English",
   errors: {
     empty: "No JSON was entered.",
     parse: "Invalid JSON: ",
@@ -155,25 +165,73 @@ const UI = {
   }
 };
 
+/* Quiz chrome follows the quiz's own language (like the arabic quiz), even
+   though the builder interface above stays English. */
+const QUIZ_UI = {
+  en: UI,
+  ku: {
+    startCount: n => `ئەم تاقیکردنەوەیە پێکدێت لە ${td(n)} پرسیار:`,
+    startCategory: (n, cat) => `• ${td(n)} پرسیار لە ${cat}`,
+    startBtn: "دەستپێکردنی تاقیکردنەوە",
+    counter: (i, n) => `پرسیاری ${td(i)} لە ${td(n)}`,
+    prev: "پێشوو",
+    next: "پرسیاری داهاتوو",
+    finish: "پیشاندانی ئەنجام و ڕوونکردنەوە",
+    resultsTitle: "ئەنجامی تاقیکردنەوە",
+    restart: "دووبارە ئەنجامدانەوە",
+    reviewHeading: "پێداچوونەوە و ڕوونکردنەوەی پرسیارەکان:",
+    correct: "✓ ڕاستە",
+    wrong: "✗ هەڵەیە",
+    questionShort: i => `پرسیاری ${td(i)}`,
+    yourAnswer: "وەڵامی تۆ: ",
+    correctAnswer: "وەڵامی ڕاست: ",
+    explanation: "ڕوونکردنەوە: ",
+    noAnswer: "هیچ وەڵامێک نەدراوە",
+    mustSelect: "تکایە سەرەتا یەکێک لە بژاردەکان هەڵبژێرە!",
+    score: (s, t) => `${td(s)} لە ${td(t)} (${Math.round((s / t) * 100)}%)`,
+    categoryScore: (cat, s, t) => `${cat}: ${td(s)} لە ${td(t)}`
+  }
+};
+
 /* ============================================================
  * 2) State + helpers
  * ============================================================ */
-let quiz = null;              // normalized quiz
-let questions = [];           // flat, ordered questions
+let quiz = null;              // normalized, bilingual quiz
+let questions = [];           // flat, ordered questions (bilingual)
 let quizQuestions = [];
 let currentQuestionIndex = 0;
 let userAnswers = [];
 let categoryOrder = [];
 let categoryColor = new Map();
+let currentLang = "en";       // language of the quiz being played
 
 const $ = id => document.getElementById(id);
 
 function safeText(value) { return value == null ? "" : String(value).trim(); }
 
-/* Prefer English text; fall back to the Kurdish base key when English is absent. */
+/* Kurdish digits only when the quiz is playing in Kurdish. */
+function td(value) {
+  const s = String(value);
+  if (currentLang !== "ku") return s;
+  const digits = ["٠","١","٢","٣","٤","٥","٦","٧","٨","٩"];
+  return s.replace(/[0-9]/g, d => digits[Number(d)]);
+}
+
+/* Bilingual pair -> string in the active language, with cross-language fallback. */
 function pick(pair) {
   if (!pair || typeof pair !== "object") return safeText(pair);
-  return safeText(pair.en) || safeText(pair.ku) || "";
+  return safeText(pair[currentLang]) || safeText(pair.ku) || safeText(pair.en) || "";
+}
+
+function t() { return QUIZ_UI[currentLang]; }
+
+function isBilingual() {
+  const pairHasBoth = pair => !!(pair && pair.ku && pair.en);
+  if (quiz && (pairHasBoth(quiz.title) || pairHasBoth(quiz.subtitle))) return true;
+  return questions.some(q =>
+    pairHasBoth(q.question) || pairHasBoth(q.category) || pairHasBoth(q.explanation) ||
+    (q.optionsKu || []).some((o, i) => o && (q.optionsEn || [])[i] && o !== q.optionsEn[i])
+  );
 }
 
 function shuffleArray(array) {
@@ -186,7 +244,7 @@ function shuffleArray(array) {
 }
 
 /* ============================================================
- * 3) Normalize the input JSON
+ * 3) Normalize the input JSON into a bilingual quiz object
  * ============================================================ */
 function pair(base, en) { return { ku: safeText(base), en: safeText(en) }; }
 
@@ -194,7 +252,6 @@ function normalizeQuiz(raw) {
   if (!raw || typeof raw !== "object") throw { message: UI.errors.parse + "not an object" };
 
   const meta = raw.meta && typeof raw.meta === "object" ? raw.meta : {};
-
   const rawQuestions = Array.isArray(raw.questions) ? raw.questions : [];
   if (!rawQuestions.length) throw { message: UI.errors.noQuestions };
 
@@ -205,16 +262,16 @@ function normalizeQuiz(raw) {
     const category = pair(q.category, q.category_en);
     const explanation = pair(q.explanation, q.explanation_en);
 
-    let optionsBase = Array.isArray(q.options) ? q.options.map(safeText) : [];
+    let optionsKu = Array.isArray(q.options) ? q.options.map(safeText) : [];
     let optionsEn = Array.isArray(q.options_en) ? q.options_en.map(safeText) : [];
 
-    if (!optionsBase.length && optionsEn.length) optionsBase = [...optionsEn];
-    if (!optionsEn.length && optionsBase.length) optionsEn = [...optionsBase];
-    if (optionsBase.length < 2) throw { message: UI.errors.badOptions(index + 1) };
+    if (!optionsKu.length && optionsEn.length) optionsKu = [...optionsEn];
+    if (!optionsEn.length && optionsKu.length) optionsEn = [...optionsKu];
+    if (optionsKu.length < 2) throw { message: UI.errors.badOptions(index + 1) };
 
     // Keep both option arrays the same length so shuffling stays in sync.
-    const length = Math.min(optionsBase.length, optionsEn.length);
-    optionsBase = optionsBase.slice(0, length);
+    const length = Math.min(optionsKu.length, optionsEn.length);
+    optionsKu = optionsKu.slice(0, length);
     optionsEn = optionsEn.slice(0, length);
 
     const correct = Number(q.correct);
@@ -222,14 +279,18 @@ function normalizeQuiz(raw) {
       throw { message: UI.errors.badCorrect(index + 1) };
     }
 
-    return { category, question, explanation, optionsKu: optionsBase, optionsEn, correct };
+    return { category, question, explanation, optionsKu, optionsEn, correct };
   });
 
   const intro = Array.isArray(meta.intro) ? meta.intro : [];
   const introEn = Array.isArray(meta.intro_en) ? meta.intro_en : [];
-  const introPairs = [];
+  let introPairs = [];
   const introLen = Math.max(intro.length, introEn.length);
   for (let i = 0; i < introLen; i++) introPairs.push(pair(intro[i], introEn[i]));
+  if (!introPairs.length) introPairs = [
+    pair("ڕوونکردنەوەی وەڵامە ڕاست و هەڵەکان لە کۆتاییدا", "Correct and wrong answers are explained at the end"),
+    pair("پرسیار و وەڵامەکان لە هەر جارێکدا دەگۆڕدرێن", "Questions and answers are shuffled every time")
+  ];
 
   return {
     title: pair(meta.title, meta.title_en),
@@ -251,7 +312,7 @@ const CATEGORY_COLORS = [
   { bg: "bg-cyan-900/60", text: "text-cyan-300", border: "border-cyan-700" }
 ];
 
-function categoryKey(q) { return q.category.en || q.category.ku || "—"; }
+function categoryKey(q) { return q.category.ku || q.category.en || "—"; }
 
 function prepareCategories() {
   categoryOrder = [...new Set(questions.map(categoryKey))];
@@ -280,7 +341,16 @@ function createQuiz() {
   return result;
 }
 
-function optionAt(q, index) { return q.optionsEn[index] || q.optionsKu[index] || ""; }
+function optionAt(q, index) {
+  return currentLang === "en"
+    ? (q.optionsEn[index] || q.optionsKu[index] || "")
+    : (q.optionsKu[index] || q.optionsEn[index] || "");
+}
+
+function categoryLabel(key) {
+  const found = questions.find(q => categoryKey(q) === key);
+  return found ? pick(found.category) : key;
+}
 
 const startScreen = $("start-screen");
 const quizScreen = $("quiz-screen");
@@ -299,7 +369,7 @@ const reviewContainer = $("review-container");
 function loadQuestion() {
   const q = quizQuestions[currentQuestionIndex];
 
-  questionCounter.textContent = UI.counter(currentQuestionIndex + 1, quizQuestions.length);
+  questionCounter.textContent = t().counter(td(currentQuestionIndex + 1), td(quizQuestions.length));
 
   const progressPercent = ((currentQuestionIndex + 1) / quizQuestions.length) * 100;
   progressBar.style.width = `${progressPercent}%`;
@@ -308,7 +378,7 @@ function loadQuestion() {
   categoryBadge.textContent = pick(q.category);
   categoryBadge.className = `${color.bg} ${color.text} px-3 py-1 rounded-full text-xs border ${color.border}`;
 
-  questionText.textContent = `${currentQuestionIndex + 1}. ${pick(q.question)}`;
+  questionText.textContent = `${td(currentQuestionIndex + 1)}. ${pick(q.question)}`;
 
   optionsContainer.replaceChildren();
 
@@ -317,7 +387,7 @@ function loadQuestion() {
     const selected = userAnswers[currentQuestionIndex] === index;
 
     button.type = "button";
-    button.className = "w-full text-left p-4 rounded-xl border transition duration-200 font-medium " +
+    button.className = "w-full p-4 rounded-xl border transition duration-200 font-medium text-start " +
       (selected
         ? "bg-emerald-700 border-emerald-400 text-white"
         : "bg-slate-700/60 hover:bg-slate-700 border-slate-600 text-slate-200");
@@ -328,8 +398,8 @@ function loadQuestion() {
     optionsContainer.appendChild(button);
   });
 
-  prevBtn.textContent = UI.prev;
-  nextBtn.textContent = currentQuestionIndex === quizQuestions.length - 1 ? UI.finish : UI.next;
+  prevBtn.textContent = t().prev;
+  nextBtn.textContent = currentQuestionIndex === quizQuestions.length - 1 ? t().finish : t().next;
 
   prevBtn.classList.toggle("hidden", currentQuestionIndex === 0);
   nextBtn.classList.toggle("hidden", userAnswers[currentQuestionIndex] === null);
@@ -342,7 +412,7 @@ function selectOption(index) {
 
 function nextQuestion() {
   if (userAnswers[currentQuestionIndex] === null) {
-    alert(UI.mustSelect);
+    alert(t().mustSelect);
     return;
   }
   if (currentQuestionIndex < quizQuestions.length - 1) {
@@ -389,11 +459,11 @@ function showResults() {
     const status = document.createElement("span");
     status.className = "text-xs font-bold px-2.5 py-1 rounded-full " +
       (isCorrect ? "bg-emerald-800 text-emerald-200" : "bg-rose-800 text-rose-200");
-    status.textContent = isCorrect ? UI.correct : UI.wrong;
+    status.textContent = isCorrect ? t().correct : t().wrong;
 
     const number = document.createElement("span");
     number.className = "text-xs text-slate-400";
-    number.textContent = UI.questionShort(index + 1);
+    number.textContent = t().questionShort(td(index + 1));
 
     topRow.append(status, number);
 
@@ -403,19 +473,19 @@ function showResults() {
 
     const question = document.createElement("h4");
     question.className = "font-semibold text-slate-100 mb-3";
-    question.textContent = `${index + 1}. ${pick(q.question)}`;
+    question.textContent = `${td(index + 1)}. ${pick(q.question)}`;
 
     const yourAnswer = document.createElement("p");
     yourAnswer.className = "text-sm mb-2 text-slate-300";
 
     const yourLabel = document.createElement("strong");
-    yourLabel.textContent = UI.yourAnswer;
+    yourLabel.textContent = t().yourAnswer;
 
     const yourText = document.createElement("span");
     yourText.className = isCorrect ? "text-emerald-400 font-bold" : "text-rose-400 font-bold";
     yourText.textContent = userChoice !== null
       ? `${String.fromCharCode(65 + userChoice)}) ${optionAt(q, userChoice)}`
-      : UI.noAnswer;
+      : t().noAnswer;
 
     yourAnswer.append(yourLabel, yourText);
     card.append(topRow, category, question, yourAnswer);
@@ -425,7 +495,7 @@ function showResults() {
       correctAnswer.className = "text-sm mb-2 text-slate-300";
 
       const label = document.createElement("strong");
-      label.textContent = UI.correctAnswer;
+      label.textContent = t().correctAnswer;
 
       const answer = document.createElement("span");
       answer.className = "text-emerald-400 font-bold";
@@ -439,26 +509,21 @@ function showResults() {
     explanation.className = "mt-3 pt-3 border-t border-slate-700/60 text-xs sm:text-sm text-slate-300 bg-slate-900/40 p-3 rounded-lg";
 
     const explanationLabel = document.createElement("strong");
-    explanationLabel.textContent = UI.explanation;
+    explanationLabel.textContent = t().explanation;
 
     explanation.append(explanationLabel, document.createTextNode(pick(q.explanation)));
     card.appendChild(explanation);
     reviewContainer.appendChild(card);
   });
 
-  scoreDisplay.textContent = UI.score(score, quizQuestions.length);
+  scoreDisplay.textContent = t().score(td(score), td(quizQuestions.length));
 
   categoryScores.replaceChildren();
   for (const [key, result] of Object.entries(scoresByCategory)) {
     const line = document.createElement("p");
-    line.textContent = UI.categoryScore(categoryLabel(key), result.correct, result.total);
+    line.textContent = t().categoryScore(categoryLabel(key), td(result.correct), td(result.total));
     categoryScores.appendChild(line);
   }
-}
-
-function categoryLabel(key) {
-  const found = questions.find(q => categoryKey(q) === key);
-  return found ? pick(found.category) : key;
 }
 
 function restartQuiz() {
@@ -470,7 +535,7 @@ function restartQuiz() {
  * 5) Start screen
  * ============================================================ */
 function renderStartScreen() {
-  $("start-count").textContent = UI.startCount(questions.length);
+  $("start-count").textContent = t().startCount(td(questions.length));
 
   const list = $("start-list");
   list.replaceChildren();
@@ -478,13 +543,7 @@ function renderStartScreen() {
   for (const key of categoryOrder) {
     const count = questions.filter(q => categoryKey(q) === key).length;
     const li = document.createElement("li");
-    li.textContent = UI.startCategory(count, categoryLabel(key));
-    list.appendChild(li);
-  }
-
-  for (const extra of [UI.startExtra1, UI.startExtra2]) {
-    const li = document.createElement("li");
-    li.textContent = extra;
+    li.textContent = t().startCategory(td(count), categoryLabel(key));
     list.appendChild(li);
   }
 
@@ -496,42 +555,82 @@ function renderStartScreen() {
     list.appendChild(li);
   }
 
-  $("start-btn").textContent = UI.startBtn;
+  $("start-btn").textContent = t().startBtn;
 }
 
 /* ============================================================
- * 6) Builder: template, file loading, validation, build
+ * 6) Language switch (only when the quiz is bilingual)
+ * ============================================================ */
+let langBtn = null;
+
+function updateDir() {
+  document.documentElement.lang = currentLang;
+  document.documentElement.dir = currentLang === "en" ? "ltr" : "rtl";
+}
+
+function setQuizLanguage(lang) {
+  currentLang = lang;
+  if (langBtn) {
+    langBtn.textContent = currentLang === "en" ? "🌐 کوردی" : "🌐 English";
+    langBtn.hidden = false;
+  }
+  updateDir();
+  $("results-title").textContent = t().resultsTitle;
+  $("review-heading").textContent = t().reviewHeading;
+  $("restart-btn").textContent = t().restart;
+  if (quiz && !startScreen.classList.contains("hidden")) renderStartScreen();
+  if (quiz && !quizScreen.classList.contains("hidden")) loadQuestion();
+  if (quiz && !resultsScreen.classList.contains("hidden")) {
+    quizScreen.classList.add("hidden");
+    showResults();
+  }
+}
+
+function addQuizToolbar() {
+  if (langBtn) return;
+  const bar = document.createElement("div");
+  bar.className = "flex justify-end items-center gap-2 mb-6";
+  bar.dir = "ltr";             // keep the switch pinned regardless of page direction
+  langBtn = document.createElement("button");
+  langBtn.type = "button";
+  langBtn.className = "bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 font-semibold px-4 py-2 rounded-xl text-sm transition";
+  langBtn.addEventListener("click", () => setQuizLanguage(currentLang === "en" ? "ku" : "en"));
+  bar.appendChild(langBtn);
+  const quizView = $("quiz-view");
+  quizView.insertBefore(bar, quizView.firstChild);
+}
+
+/* ============================================================
+ * 7) Builder: template, file loading, validation, build
  * ============================================================ */
 const TEMPLATE_JSON = String.raw`{
   "meta": {
-    "title": "Sample Quiz",
+    "title": "تاقیکردنەوەی نموونە",
     "title_en": "Sample Quiz",
-    "subtitle": "A sample quiz that shows the JSON format",
-    "subtitle_en": "A sample quiz that shows the JSON format",
-    "intro": ["Explanations are shown at the end"],
-    "intro_en": ["Explanations are shown at the end"]
+    "subtitle": "تاقیکردنەوەیەکی نموونە بۆ نیشاندانی شێوازی JSON",
+    "subtitle_en": "A sample quiz that shows the JSON format"
   },
   "questions": [
     {
-      "category": "General",
+      "category": "گشتی",
       "category_en": "General",
-      "question": "What is the capital of France?",
+      "question": "پایتەختی فەرەنسا چییە؟",
       "question_en": "What is the capital of France?",
-      "options": ["Paris", "Lyon", "Berlin", "Rome"],
+      "options": ["پاریس", "لیۆن", "بەرلین", "ڕۆما"],
       "options_en": ["Paris", "Lyon", "Berlin", "Rome"],
       "correct": 0,
-      "explanation": "Paris is the capital of France.",
+      "explanation": "پاریس پایتەختی فەرەنسایە.",
       "explanation_en": "Paris is the capital of France."
     },
     {
-      "category": "Science",
+      "category": "زانست",
       "category_en": "Science",
-      "question": "How many planets are in the solar system?",
+      "question": "چەند هەسارە لە کۆمەڵەی خۆردا هەیە؟",
       "question_en": "How many planets are in the solar system?",
-      "options": ["7", "8", "9", "10"],
+      "options": ["٧", "٨", "٩", "١٠"],
       "options_en": ["7", "8", "9", "10"],
       "correct": 1,
-      "explanation": "The solar system has 8 planets.",
+      "explanation": "کۆمەڵەی خۆر ٨ هەسارەی هەیە.",
       "explanation_en": "The solar system has 8 planets."
     }
   ]
@@ -579,24 +678,199 @@ function buildQuizFromJson(text) {
   quizScreen.classList.add("hidden");
   resultsScreen.classList.add("hidden");
 
+  if (isBilingual()) addQuizToolbar();
+  currentLang = "en";
+  setQuizLanguage("en");
+
   $("quiz-title").textContent = pick(quiz.title) || UI.quizFallbackTitle;
   const subtitle = pick(quiz.subtitle);
   $("quiz-subtitle").textContent = subtitle;
   $("quiz-subtitle").className = subtitle ? "text-slate-400 text-sm sm:text-base" : "hidden";
-  $("results-title").textContent = UI.resultsTitle;
-  $("review-heading").textContent = UI.reviewHeading;
-  $("restart-btn").textContent = UI.restart;
+  $("results-title").textContent = t().resultsTitle;
+  $("review-heading").textContent = t().reviewHeading;
+  $("restart-btn").textContent = t().restart;
 
   renderStartScreen();
 }
 
-$("template-btn").addEventListener("click", () => {
-  $("json-input").value = TEMPLATE_JSON;
-  showError("");
-});
+/* ============================================================
+ * 8) Download a standalone quiz
+ * ============================================================ */
+function escapeScriptJson(value) {
+  return JSON.stringify(value)
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e")
+    .replace(/&/g, "\\u0026")
+    .replace(/\u2028/g, "\\u2028")
+    .replace(/\u2029/g, "\\u2029");
+}
 
+function buildStandaloneHtml() {
+  const data = {
+    bilingual: isBilingual(),
+    withHome: $("home-toggle").checked,
+    title: quiz.title,
+    subtitle: quiz.subtitle,
+    intro: quiz.intro,
+    questions: questions.map(q => ({
+      category: q.category,
+      question: q.question,
+      explanation: q.explanation,
+      optionsKu: q.optionsKu,
+      optionsEn: q.optionsEn,
+      correct: q.correct
+    }))
+  };
+  const json = escapeScriptJson(data);
+  const bilingual = data.bilingual;
+  const withHome = data.withHome;
+
+  const homeHtml = withHome
+    ? '<a href="index.html" class="bg-slate-700 hover:bg-slate-600 text-white font-semibold py-2 px-4 rounded-xl text-sm transition">🏠 Home</a>'
+    : '';
+  const topbar = (withHome || bilingual)
+    ? `<div class="flex justify-between items-center mb-6 gap-3" dir="ltr"><div class="flex items-center gap-2">${homeHtml}</div><button type="button" id="lang-btn" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 font-semibold px-4 py-2 rounded-xl text-sm transition" hidden>🌐 English</button></div>`
+    : '';
+
+  return `<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz</title>
+<script src="https://cdn.tailwindcss.com"><\/script>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{font-family:'Vazirmatn',sans-serif}
+button:focus-visible{outline:2px solid #34d399;outline-offset:3px}
+</style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col items-center justify-center p-4">
+<div class="max-w-3xl w-full bg-slate-800 rounded-2xl shadow-2xl p-6 sm:p-8 border border-slate-700">
+${topbar}
+<header class="text-center mb-8">
+<h1 id="quiz-title" class="text-2xl sm:text-3xl font-bold text-emerald-400 mb-2"></h1>
+<p id="quiz-subtitle" class="text-slate-400 text-sm sm:text-base"></p>
+</header>
+
+<div id="start-screen" class="text-center py-8">
+<div class="mb-6 bg-slate-700/50 p-6 rounded-xl border border-slate-600 inline-block">
+<p id="start-count" class="text-lg font-medium mb-2"></p>
+<ul id="start-list" class="text-slate-300 text-sm space-y-1 inline-block"></ul>
+</div>
+<div><button type="button" id="start-btn" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition text-lg"></button></div>
+</div>
+
+<div id="quiz-screen" class="hidden">
+<div class="flex justify-between items-center mb-4 text-sm text-slate-400 font-medium gap-3">
+<span id="question-counter"></span>
+<span id="category-badge" class="px-3 py-1 rounded-full text-xs border"></span>
+</div>
+<div class="w-full bg-slate-700/80 rounded-full h-2.5 mb-6 overflow-hidden border border-slate-600/50">
+<div id="progress-bar" class="bg-emerald-500 h-full transition-all duration-300 ease-out" style="width: 0%"></div>
+</div>
+<div class="mb-6"><h2 id="question-text" class="text-lg sm:text-xl font-semibold text-slate-100 leading-relaxed"></h2></div>
+<div id="options-container" class="space-y-3 mb-6"></div>
+<div class="flex justify-between items-center gap-3 mt-6 pt-4 border-t border-slate-700">
+<button type="button" id="prev-btn" class="bg-slate-700 hover:bg-slate-600 text-white font-semibold py-2 px-5 rounded-xl hidden"></button>
+<button type="button" id="next-btn" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2 px-6 rounded-xl hidden"></button>
+</div>
+</div>
+
+<div id="results-screen" class="hidden">
+<div class="text-center py-6 mb-6 border-b border-slate-700">
+<h2 id="results-title" class="text-3xl font-bold text-emerald-400 mb-2"></h2>
+<p id="score-display" class="text-4xl font-extrabold text-white mb-4"></p>
+<div id="category-scores" class="text-slate-300 mb-5 space-y-1"></div>
+<button type="button" id="restart-btn" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2 px-6 rounded-xl text-sm"></button>
+</div>
+<h3 id="review-heading" class="text-xl font-bold mb-4 text-slate-200"></h3>
+<div id="review-container" class="space-y-6 max-h-[60vh] overflow-y-auto pl-2"></div>
+</div>
+
+<footer class="mt-8 pt-4 border-t border-slate-700/60 text-center text-xs text-slate-500">Created by Mustafa Zardasht</footer>
+</div>
+
+<script id="quiz-data" type="application/json">${json}<\/script>
+<script>
+"use strict";
+const DATA = JSON.parse(document.getElementById("quiz-data").textContent);
+const UI = {
+  en: { startCount: n => \`This quiz has \${n} questions:\`, startCategory: (n, cat) => \`• \${n} questions from \${cat}\`,
+    startBtn: "Start Quiz", counter: (i, n) => \`Question \${i} of \${n}\`, prev: "Previous", next: "Next Question",
+    finish: "Show Results & Explanations", resultsTitle: "Quiz Results", restart: "Try Again",
+    reviewHeading: "Review and Explanations:", correct: "✓ Correct", wrong: "✗ Wrong", questionShort: i => \`Question \${i}\`,
+    yourAnswer: "Your answer: ", correctAnswer: "Correct answer: ", explanation: "Explanation: ", noAnswer: "No answer given",
+    mustSelect: "Please select an option first!", score: (s, t) => \`\${s} of \${t} (\${Math.round((s / t) * 100)}%)\`,
+    categoryScore: (cat, s, t) => \`\${cat}: \${s} of \${t}\`, langLabel: "🌐 English" },
+  ku: { startCount: n => \`ئەم تاقیکردنەوەیە پێکدێت لە \${td(n)} پرسیار:\`, startCategory: (n, cat) => \`• \${td(n)} پرسیار لە \${cat}\`,
+    startBtn: "دەستپێکردنی تاقیکردنەوە", counter: (i, n) => \`پرسیاری \${td(i)} لە \${td(n)}\`, prev: "پێشوو", next: "پرسیاری داهاتوو",
+    finish: "پیشاندانی ئەنجام و ڕوونکردنەوە", resultsTitle: "ئەنجامی تاقیکردنەوە", restart: "دووبارە ئەنجامدانەوە",
+    reviewHeading: "پێداچوونەوە و ڕوونکردنەوەی پرسیارەکان:", correct: "✓ ڕاستە", wrong: "✗ هەڵەیە", questionShort: i => \`پرسیاری \${td(i)}\`,
+    yourAnswer: "وەڵامی تۆ: ", correctAnswer: "وەڵامی ڕاست: ", explanation: "ڕوونکردنەوە: ", noAnswer: "هیچ وەڵامێک نەدراوە",
+    mustSelect: "تکایە سەرەتا یەکێک لە بژاردەکان هەڵبژێرە!", score: (s, t) => \`\${td(s)} لە \${td(t)} (\${Math.round((s / t) * 100)}%)\`,
+    categoryScore: (cat, s, t) => \`\${cat}: \${td(s)} لە \${td(t)}\`, langLabel: "🌐 کوردی" }
+};
+let currentLang = DATA.bilingual ? "ku" : "en";
+const $ = id => document.getElementById(id);
+function safeText(v){ return v == null ? "" : String(v).trim(); }
+function td(v){ const s=String(v); if(currentLang!=="ku") return s; return s.replace(/[0-9]/g,d=>"٠١٢٣٤٥٦٧٨٩"[Number(d)]); }
+function pick(p){ if(!p||typeof p!=="object") return safeText(p); return safeText(p[currentLang])||safeText(p.ku)||safeText(p.en)||""; }
+function t(){ return UI[currentLang]; }
+function shuffle(a){ const r=[...a]; for(let i=r.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [r[i],r[j]]=[r[j],r[i]]; } return r; }
+const COLORS=[{bg:"bg-sky-900/60",text:"text-sky-300",border:"border-sky-700"},{bg:"bg-emerald-900/60",text:"text-emerald-300",border:"border-emerald-700"},{bg:"bg-amber-900/60",text:"text-amber-300",border:"border-amber-700"},{bg:"bg-violet-900/60",text:"text-violet-300",border:"border-violet-700"},{bg:"bg-rose-900/60",text:"text-rose-300",border:"border-rose-700"},{bg:"bg-cyan-900/60",text:"text-cyan-300",border:"border-cyan-700"}];
+const questions = DATA.questions;
+let categoryOrder=[], categoryColor=new Map(), quizQuestions=[], userAnswers=[], currentQuestionIndex=0;
+function catKey(q){ return q.category.ku||q.category.en||"—"; }
+function prepare(){ categoryOrder=[...new Set(questions.map(catKey))]; categoryColor=new Map(categoryOrder.map((k,i)=>[k,COLORS[i%COLORS.length]])); }
+function catLabel(key){ const f=questions.find(q=>catKey(q)===key); return f?pick(f.category):key; }
+function createQuiz(){ const out=[]; for(const c of categoryOrder){ for(const q of shuffle(questions.filter(x=>catKey(x)===c))){ const order=shuffle(q.optionsKu.map((_,i)=>i)); out.push({category:q.category,categoryKey:c,question:q.question,explanation:q.explanation,optionsKu:order.map(i=>q.optionsKu[i]),optionsEn:order.map(i=>q.optionsEn[i]),correct:order.indexOf(q.correct)}); } } return out; }
+function optionAt(q,i){ return currentLang==="en" ? (q.optionsEn[i]||q.optionsKu[i]||"") : (q.optionsKu[i]||q.optionsEn[i]||""); }
+function setLang(lang){ currentLang=lang; document.documentElement.lang=lang; document.documentElement.dir=lang==="en"?"ltr":"rtl"; const b=$("lang-btn"); if(b) b.textContent = lang==="en" ? "🌐 کوردی" : "🌐 English"; $("results-title").textContent=t().resultsTitle; $("review-heading").textContent=t().reviewHeading; $("restart-btn").textContent=t().restart; if(!$("start-screen").classList.contains("hidden")) renderStart(); if(!$("quiz-screen").classList.contains("hidden")) loadQuestion(); if(!$("results-screen").classList.contains("hidden")) showResults(); }
+function renderStart(){ $("start-count").textContent=t().startCount(questions.length); const list=$("start-list"); list.replaceChildren(); for(const key of categoryOrder){ const n=questions.filter(q=>catKey(q)===key).length; const li=document.createElement("li"); li.textContent=t().startCategory(n,catLabel(key)); list.appendChild(li); } for(const line of DATA.intro){ const text=pick(line); if(!text) continue; const li=document.createElement("li"); li.textContent="• "+text; list.appendChild(li); } $("start-btn").textContent=t().startBtn; }
+function loadQuestion(){ const q=quizQuestions[currentQuestionIndex]; $("question-counter").textContent=t().counter(currentQuestionIndex+1,quizQuestions.length); $("progress-bar").style.width=(((currentQuestionIndex+1)/quizQuestions.length)*100)+"%"; const color=categoryColor.get(q.categoryKey)||COLORS[1]; const badge=$("category-badge"); badge.textContent=pick(q.category); badge.className=color.bg+" "+color.text+" px-3 py-1 rounded-full text-xs border "+color.border; $("question-text").textContent=td(currentQuestionIndex+1)+". "+pick(q.question); const c=$("options-container"); c.replaceChildren(); q.optionsKu.forEach((_,i)=>{ const b=document.createElement("button"); const sel=userAnswers[currentQuestionIndex]===i; b.type="button"; b.className="w-full p-4 rounded-xl border transition duration-200 font-medium text-start "+(sel?"bg-emerald-700 border-emerald-400 text-white":"bg-slate-700/60 hover:bg-slate-700 border-slate-600 text-slate-200"); b.textContent=String.fromCharCode(65+i)+") "+optionAt(q,i); b.addEventListener("click",()=>selectOption(i)); c.appendChild(b); }); const p=$("prev-btn"), n=$("next-btn"); p.textContent=t().prev; n.textContent=currentQuestionIndex===quizQuestions.length-1?t().finish:t().next; p.classList.toggle("hidden",currentQuestionIndex===0); n.classList.toggle("hidden",userAnswers[currentQuestionIndex]===null); }
+function selectOption(i){ userAnswers[currentQuestionIndex]=i; loadQuestion(); }
+function nextQuestion(){ if(userAnswers[currentQuestionIndex]===null){ alert(t().mustSelect); return; } if(currentQuestionIndex<quizQuestions.length-1){ currentQuestionIndex++; loadQuestion(); } else showResults(); }
+function previousQuestion(){ if(currentQuestionIndex>0){ currentQuestionIndex--; loadQuestion(); } }
+function showResults(){ $("quiz-screen").classList.add("hidden"); $("results-screen").classList.remove("hidden"); const rc=$("review-container"); rc.replaceChildren(); let score=0; const byCat={}; quizQuestions.forEach((q,i)=>{ if(!byCat[q.categoryKey]) byCat[q.categoryKey]={correct:0,total:0}; byCat[q.categoryKey].total++; const ua=userAnswers[i]; const ok=ua===q.correct; if(ok){ score++; byCat[q.categoryKey].correct++; } const card=document.createElement("div"); card.className="p-5 rounded-xl border "+(ok?"bg-emerald-950/30 border-emerald-800/60":"bg-rose-950/30 border-rose-800/60"); const top=document.createElement("div"); top.className="flex items-start justify-between gap-3 mb-3"; const st=document.createElement("span"); st.className="text-xs font-bold px-2.5 py-1 rounded-full "+(ok?"bg-emerald-800 text-emerald-200":"bg-rose-800 text-rose-200"); st.textContent=ok?t().correct:t().wrong; const num=document.createElement("span"); num.className="text-xs text-slate-400"; num.textContent=t().questionShort(i+1); top.append(st,num); const cat=document.createElement("p"); cat.className="text-xs text-slate-400 mb-2"; cat.textContent=pick(q.category); const qq=document.createElement("h4"); qq.className="font-semibold text-slate-100 mb-3"; qq.textContent=td(i+1)+". "+pick(q.question); const ya=document.createElement("p"); ya.className="text-sm mb-2 text-slate-300"; const yl=document.createElement("strong"); yl.textContent=t().yourAnswer; const yt=document.createElement("span"); yt.className=ok?"text-emerald-400 font-bold":"text-rose-400 font-bold"; yt.textContent=ua!==null?String.fromCharCode(65+ua)+") "+optionAt(q,ua):t().noAnswer; ya.append(yl,yt); card.append(top,cat,qq,ya); if(!ok){ const ca=document.createElement("p"); ca.className="text-sm mb-2 text-slate-300"; const cl=document.createElement("strong"); cl.textContent=t().correctAnswer; const av=document.createElement("span"); av.className="text-emerald-400 font-bold"; av.textContent=String.fromCharCode(65+q.correct)+") "+optionAt(q,q.correct); ca.append(cl,av); card.appendChild(ca); } const ex=document.createElement("div"); ex.className="mt-3 pt-3 border-t border-slate-700/60 text-xs sm:text-sm text-slate-300 bg-slate-900/40 p-3 rounded-lg"; const el=document.createElement("strong"); el.textContent=t().explanation; ex.append(el,document.createTextNode(pick(q.explanation))); card.appendChild(ex); rc.appendChild(card); }); $("score-display").textContent=t().score(score,quizQuestions.length); const cs=$("category-scores"); cs.replaceChildren(); for(const [k,r] of Object.entries(byCat)){ const p=document.createElement("p"); p.textContent=t().categoryScore(catLabel(k),r.correct,r.total); cs.appendChild(p); } }
+function restart(){ $("results-screen").classList.add("hidden"); $("start-screen").classList.remove("hidden"); renderStart(); }
+$("start-btn").addEventListener("click",()=>{ quizQuestions=createQuiz(); userAnswers=new Array(quizQuestions.length).fill(null); currentQuestionIndex=0; $("start-screen").classList.add("hidden"); $("results-screen").classList.add("hidden"); $("quiz-screen").classList.remove("hidden"); loadQuestion(); });
+$("next-btn").addEventListener("click",nextQuestion);
+$("prev-btn").addEventListener("click",previousQuestion);
+$("restart-btn").addEventListener("click",restart);
+const lb=$("lang-btn"); if(lb) lb.addEventListener("click",()=>setLang(currentLang==="en"?"ku":"en"));
+document.addEventListener("keydown",e=>{ if($("quiz-screen").classList.contains("hidden")) return; if(e.key==="ArrowLeft"&&currentQuestionIndex<quizQuestions.length-1){ if(userAnswers[currentQuestionIndex]!==null) nextQuestion(); } else if(e.key==="ArrowRight"&&currentQuestionIndex>0){ previousQuestion(); } });
+$("quiz-title").textContent=pick(DATA.title)||"Quiz";
+const sub=pick(DATA.subtitle); $("quiz-subtitle").textContent=sub; $("quiz-subtitle").className=sub?"text-slate-400 text-sm sm:text-base":"hidden";
+$("results-title").textContent=t().resultsTitle; $("review-heading").textContent=t().reviewHeading; $("restart-btn").textContent=t().restart;
+document.title=pick(DATA.title)||"Quiz";
+if(DATA.bilingual){ $("lang-btn").hidden=false; } else { const b=$("lang-btn"); if(b) b.remove(); }
+prepare();
+setLang(currentLang); renderStart();
+<\/script>
+</body>
+</html>`;
+}
+
+function downloadQuiz() {
+  if (!quiz) { showError("Build a quiz first, then download it."); return; }
+  const html = buildStandaloneHtml();
+  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${(safeText(pick(quiz.title)) || "quiz").replace(/[\\/:*?"<>|]+/g, "-")}.html`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+/* ============================================================
+ * 9) Wire up builder controls + init
+ * ============================================================ */
+$("template-btn").addEventListener("click", () => { $("json-input").value = TEMPLATE_JSON; showError(""); });
 $("file-btn").addEventListener("click", () => $("file-input").click());
-
 $("file-input").addEventListener("change", event => {
   const file = event.target.files && event.target.files[0];
   if (!file) return;
@@ -605,40 +879,13 @@ $("file-input").addEventListener("change", event => {
   reader.readAsText(file);
   event.target.value = "";
 });
-
 $("build-btn").addEventListener("click", () => buildQuizFromJson($("json-input").value));
-
+$("download-btn").addEventListener("click", downloadQuiz);
 $("editor-btn").addEventListener("click", () => {
   $("quiz-view").classList.add("hidden");
   $("builder-view").classList.remove("hidden");
 });
 
-$("start-btn").addEventListener("click", () => {
-  quizQuestions = createQuiz();
-  userAnswers = new Array(quizQuestions.length).fill(null);
-  currentQuestionIndex = 0;
-  startScreen.classList.add("hidden");
-  resultsScreen.classList.add("hidden");
-  quizScreen.classList.remove("hidden");
-  loadQuestion();
-});
-
-$("next-btn").addEventListener("click", nextQuestion);
-$("prev-btn").addEventListener("click", previousQuestion);
-$("restart-btn").addEventListener("click", restartQuiz);
-
-document.addEventListener("keydown", event => {
-  if (quizScreen.classList.contains("hidden")) return;
-  if (event.key === "ArrowLeft" && currentQuestionIndex < quizQuestions.length - 1) {
-    if (userAnswers[currentQuestionIndex] !== null) nextQuestion();
-  } else if (event.key === "ArrowRight" && currentQuestionIndex > 0) {
-    previousQuestion();
-  }
-});
-
-/* ============================================================
- * 7) Init
- * ============================================================ */
 document.title = UI.title;
 $("json-input").value = TEMPLATE_JSON;
 </script>

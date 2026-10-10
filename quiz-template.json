@@ -3,41 +3,39 @@
     "TEMPLATE for AI agents: fill in this JSON to build a quiz for quiz-maker.html.",
     "Rules:",
     "1. meta.title / meta.title_en: quiz name shown at the top. meta.subtitle / meta.subtitle_en: optional one line under it.",
-    "2. meta.intro / meta.intro_en: optional list of extra bullet lines for the start screen (question counts are added automatically).",
+    "2. meta.intro / meta.intro_en: optional list of extra bullet lines for the start screen (category counts are added automatically). If omitted, two default bullets are used.",
     "3. questions: array. Each item has category/category_en, question/question_en, options/options_en, correct (0-based index), explanation/explanation_en.",
     "4. options and options_en must be the same length and same order; 'correct' points into that order.",
-    "5. Every text field has an English '_en' key. If you only have one language, you may fill just one side; the interface prefers English and falls back to the base key.",
+    "5. Base keys are Kurdish; the '_en' keys are English. You may fill only one language; the other falls back automatically. If both are present, the quiz shows a Kurdish/English switch.",
     "6. Remove this '_instructions' key when you are done (optional but cleaner)."
   ],
   "meta": {
-    "title": "Sample Quiz",
+    "title": "تاقیکردنەوەی نموونە",
     "title_en": "Sample Quiz",
-    "subtitle": "A sample quiz that shows the JSON format",
-    "subtitle_en": "A sample quiz that shows the JSON format",
-    "intro": ["Explanations are shown at the end"],
-    "intro_en": ["Explanations are shown at the end"]
+    "subtitle": "تاقیکردنەوەیەکی نموونە بۆ نیشاندانی شێوازی JSON",
+    "subtitle_en": "A sample quiz that shows the JSON format"
   },
   "questions": [
     {
-      "category": "General",
+      "category": "گشتی",
       "category_en": "General",
-      "question": "What is the capital of France?",
+      "question": "پایتەختی فەرەنسا چییە؟",
       "question_en": "What is the capital of France?",
-      "options": ["Paris", "Lyon", "Berlin", "Rome"],
+      "options": ["پاریس", "لیۆن", "بەرلین", "ڕۆما"],
       "options_en": ["Paris", "Lyon", "Berlin", "Rome"],
       "correct": 0,
-      "explanation": "Paris is the capital of France.",
+      "explanation": "پاریس پایتەختی فەرەنسایە.",
       "explanation_en": "Paris is the capital of France."
     },
     {
-      "category": "Science",
+      "category": "زانست",
       "category_en": "Science",
-      "question": "How many planets are in the solar system?",
+      "question": "چەند هەسارە لە کۆمەڵەی خۆردا هەیە؟",
       "question_en": "How many planets are in the solar system?",
-      "options": ["7", "8", "9", "10"],
+      "options": ["٧", "٨", "٩", "١٠"],
       "options_en": ["7", "8", "9", "10"],
       "correct": 1,
-      "explanation": "The solar system has 8 planets.",
+      "explanation": "کۆمەڵەی خۆر ٨ هەسارەی هەیە.",
       "explanation_en": "The solar system has 8 planets."
     }
   ]
