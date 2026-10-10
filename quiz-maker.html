@@ -1,25 +1,24 @@
 <!DOCTYPE html>
 <!--
-  QUIZ MAKER
+  QUIZ MAKER (private tool, English only)
   Paste a quiz JSON (see quiz-template.json) and get a playable quiz that works
   exactly like quiz-2nd-arabicreligion.html: shuffled questions per category,
-  shuffled options, progress bar, per-category scores, review with explanations,
-  keyboard navigation and Kurdish digits.
+  shuffled options, progress bar, per-category scores, review with explanations
+  and keyboard navigation.
 
-  Interface language support (meta.interface in the JSON):
-    "ku"   -> Kurdish interface only (no language switch), like the arabic quiz
-    "en"   -> English interface only (no language switch)
-    "both" -> language switch is shown, user picks Kurdish or English
+  This page is intentionally not listed in files.json, so it does not show on
+  the dashboard. It is linked from README.md instead.
 
-  Content is bilingual: every text field has a Kurdish key and an English `_en`
-  key. You may supply only one language; the other falls back automatically.
+  The interface is English. Quiz content may be Kurdish, English, or both: every
+  text field has a base key and an English `_en` key, and the interface shows
+  whichever is present (English preferred).
 -->
-<html lang="ku" dir="rtl" id="html-root">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0f172a">
-<title>دروستکەری تاقیکردنەوە</title>
+<title>Quiz Maker</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -31,33 +30,23 @@ textarea{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col items-center justify-center p-4">
 <div class="max-w-3xl w-full bg-slate-800 rounded-2xl shadow-2xl p-6 sm:p-8 border border-slate-700">
 
-  <!-- ================= Top bar: Home + editor + language =================
-       dir="ltr" pins the toolbar so buttons never swap when the page flips
-       between RTL and LTR. -->
-  <div class="flex justify-between items-center mb-6 gap-3" dir="ltr">
+  <!-- ================= Top bar: Home + editor ================= -->
+  <div class="flex justify-between items-center mb-6 gap-3">
     <div class="flex items-center gap-2">
-      <a href="index.html" class="bg-slate-700 hover:bg-slate-600 text-white font-semibold py-2 px-4 rounded-xl text-sm transition">
-        🏠 <span data-ui="ku">ماڵەوە</span><span data-ui="en" hidden>Home</span>
-      </a>
-      <button type="button" id="editor-btn" class="bg-slate-700 hover:bg-slate-600 text-white font-semibold py-2 px-4 rounded-xl text-sm transition">
-        ✏️ <span data-ui="ku">دروستکەر</span><span data-ui="en" hidden>Editor</span>
-      </button>
+      <a href="index.html" class="bg-slate-700 hover:bg-slate-600 text-white font-semibold py-2 px-4 rounded-xl text-sm transition">🏠 Home</a>
+      <button type="button" id="editor-btn" class="bg-slate-700 hover:bg-slate-600 text-white font-semibold py-2 px-4 rounded-xl text-sm transition">✏️ Editor</button>
     </div>
-    <button type="button" id="lang-btn" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 font-semibold px-4 py-2 rounded-xl text-sm transition">
-      🌐 <span id="lang-label">English</span>
-    </button>
   </div>
 
   <!-- ================= Builder view ================= -->
   <section id="builder-view">
     <header class="text-center mb-6">
-      <h1 class="text-2xl sm:text-3xl font-bold text-emerald-400 mb-2"><span data-ui="ku">دروستکەری تاقیکردنەوە</span><span data-ui="en" hidden>Quiz Maker</span></h1>
-      <p class="text-slate-400 text-sm"><span data-ui="ku">JSONـی تاقیکردنەوەکەت لێرە دابنێ و دروستی بکە</span><span data-ui="en" hidden>Paste your quiz JSON and build it</span></p>
+      <h1 class="text-2xl sm:text-3xl font-bold text-emerald-400 mb-2">Quiz Maker</h1>
+      <p class="text-slate-400 text-sm">Paste your quiz JSON and build it</p>
     </header>
 
     <div class="mb-4 bg-slate-700/50 p-4 rounded-xl border border-slate-600 text-slate-300 text-xs sm:text-sm leading-relaxed">
-      <span data-ui="ku">فۆرمات: ناونیشان، کورتە، زمانى ڕووکار (ku / en / both) و لیستی پرسیارەکان. هەر دەقێک دەتوانێت تەنیا بە کوردی یان تەنیا بە ئینگلیزی بێت.</span>
-      <span data-ui="en" hidden>Format: title, subtitle, interface language (ku / en / both) and a list of questions. Any text may be Kurdish-only or English-only.</span>
+      Format: title, subtitle and a list of questions. Each question has a category, a question, options, a correct index and an explanation. Any text may be Kurdish, English, or both.
     </div>
 
     <textarea id="json-input" spellcheck="false" rows="16"
@@ -67,16 +56,10 @@ textarea{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
     <div id="error-box" class="hidden mt-4 bg-rose-950/40 border border-rose-800/60 text-rose-200 text-sm rounded-xl p-4 whitespace-pre-line"></div>
 
     <div class="flex flex-wrap gap-3 mt-4">
-      <button type="button" id="template-btn" class="bg-slate-700 hover:bg-slate-600 text-white font-semibold py-2 px-5 rounded-xl text-sm transition">
-        📄 <span data-ui="ku">بارکردنی نموونە</span><span data-ui="en" hidden>Load Template</span>
-      </button>
-      <button type="button" id="file-btn" class="bg-slate-700 hover:bg-slate-600 text-white font-semibold py-2 px-5 rounded-xl text-sm transition">
-        📂 <span data-ui="ku">کردنەوەی فایل</span><span data-ui="en" hidden>Open File</span>
-      </button>
+      <button type="button" id="template-btn" class="bg-slate-700 hover:bg-slate-600 text-white font-semibold py-2 px-5 rounded-xl text-sm transition">📄 Load Template</button>
+      <button type="button" id="file-btn" class="bg-slate-700 hover:bg-slate-600 text-white font-semibold py-2 px-5 rounded-xl text-sm transition">📂 Open File</button>
       <input type="file" id="file-input" accept=".json,application/json" class="hidden">
-      <button type="button" id="build-btn" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-6 rounded-xl shadow-lg transition text-sm">
-        ✅ <span data-ui="ku">دروستکردنی تاقیکردنەوە</span><span data-ui="en" hidden>Build Quiz</span>
-      </button>
+      <button type="button" id="build-btn" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-6 rounded-xl shadow-lg transition text-sm">✅ Build Quiz</button>
     </div>
   </section>
 
@@ -88,9 +71,9 @@ textarea{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
     </header>
 
     <div id="start-screen" class="text-center py-8">
-      <div class="mb-6 bg-slate-700/50 p-6 rounded-xl border border-slate-600 inline-block">
+      <div class="mb-6 bg-slate-700/50 p-6 rounded-xl border border-slate-600 inline-block text-left">
         <p id="start-count" class="text-lg font-medium mb-2"></p>
-        <ul id="start-list" class="text-slate-300 text-sm space-y-1 text-right inline-block"></ul>
+        <ul id="start-list" class="text-slate-300 text-sm space-y-1 inline-block"></ul>
       </div>
       <div><button type="button" id="start-btn" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition text-lg"></button></div>
     </div>
@@ -125,10 +108,9 @@ textarea{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
     </div>
   </section>
 
-  <!-- ================= Footer (author credit — switches with language) ================= -->
+  <!-- ================= Footer (author credit) ================= -->
   <footer class="mt-8 pt-4 border-t border-slate-700/60 text-center text-xs text-slate-500">
-    <span data-ui="ku">دروستکەر: مصطفی زەردەشت</span>
-    <span data-ui="en" hidden>Created by Mustafa Zardasht</span>
+    Created by Mustafa Zardasht
   </footer>
 </div>
 
@@ -136,86 +118,48 @@ textarea{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
 "use strict";
 
 /* ============================================================
- * 1) UI strings (interface language)
+ * 1) UI strings (English interface)
  * ============================================================ */
 const UI = {
-  ku: {
-    title: "دروستکەری تاقیکردنەوە",
-    quizFallbackTitle: "تاقیکردنەوە",
-    startCount: n => `ئەم تاقیکردنەوەیە پێکدێت لە ${td(n)} پرسیار:`,
-    startCategory: (n, cat) => `• ${td(n)} پرسیار لە ${cat}`,
-    startExtra1: "• ڕوونکردنەوەی وەڵامە ڕاست و هەڵەکان لە کۆتاییدا",
-    startExtra2: "• پرسیار و وەڵامەکان لە هەر جارێکدا دەگۆڕدرێن",
-    startBtn: "دەستپێکردنی تاقیکردنەوە",
-    counter: (i, n) => `پرسیاری ${td(i)} لە ${td(n)}`,
-    prev: "پێشوو",
-    next: "پرسیاری داهاتوو",
-    finish: "پیشاندانی ئەنجام و ڕوونکردنەوە",
-    resultsTitle: "ئەنجامی تاقیکردنەوە",
-    restart: "دووبارە ئەنجامدانەوە",
-    reviewHeading: "پێداچوونەوە و ڕوونکردنەوەی پرسیارەکان:",
-    correct: "✓ ڕاستە",
-    wrong: "✗ هەڵەیە",
-    questionShort: i => `پرسیاری ${td(i)}`,
-    yourAnswer: "وەڵامی تۆ: ",
-    correctAnswer: "وەڵامی ڕاست: ",
-    explanation: "ڕوونکردنەوە: ",
-    noAnswer: "هیچ وەڵامێک نەدراوە",
-    mustSelect: "تکایە سەرەتا یەکێک لە بژاردەکان هەڵبژێرە!",
-    score: (s, t) => `${td(s)} لە ${td(t)} (${Math.round((s / t) * 100)}%)`,
-    categoryScore: (cat, s, t) => `${cat}: ${td(s)} لە ${td(t)}`,
-    errors: {
-      empty: "هیچ JSONـێک نەنووسراوە.",
-      parse: "JSONـەکە دروست نییە: ",
-      noQuestions: "لیستی \"questions\" بەتاڵە یان بوونی نییە.",
-      badQuestion: i => `پرسیاری ${i} زانیاری پێویستی نییە.`,
-      badOptions: i => `پرسیاری ${i} دەبێت لانیکەم دوو بژاردەی هەبێت.`,
-      badCorrect: i => `ناوەندی \"correct\" لە پرسیاری ${i} دەرەوەی سنووری بژاردەکانە.`
-    }
-  },
-  en: {
-    title: "Quiz Maker",
-    quizFallbackTitle: "Quiz",
-    startCount: n => `This quiz has ${n} questions:`,
-    startCategory: (n, cat) => `• ${n} questions from ${cat}`,
-    startExtra1: "• Correct and wrong answers are explained at the end",
-    startExtra2: "• Questions and answers are shuffled every time",
-    startBtn: "Start Quiz",
-    counter: (i, n) => `Question ${i} of ${n}`,
-    prev: "Previous",
-    next: "Next Question",
-    finish: "Show Results & Explanations",
-    resultsTitle: "Quiz Results",
-    restart: "Try Again",
-    reviewHeading: "Review and Explanations:",
-    correct: "✓ Correct",
-    wrong: "✗ Wrong",
-    questionShort: i => `Question ${i}`,
-    yourAnswer: "Your answer: ",
-    correctAnswer: "Correct answer: ",
-    explanation: "Explanation: ",
-    noAnswer: "No answer given",
-    mustSelect: "Please select an option first!",
-    score: (s, t) => `${s} of ${t} (${Math.round((s / t) * 100)}%)`,
-    categoryScore: (cat, s, t) => `${cat}: ${s} of ${t}`,
-    errors: {
-      empty: "No JSON was entered.",
-      parse: "Invalid JSON: ",
-      noQuestions: "The \"questions\" list is empty or missing.",
-      badQuestion: i => `Question ${i} is missing required fields.`,
-      badOptions: i => `Question ${i} needs at least two options.`,
-      badCorrect: i => `The \"correct\" index in question ${i} is out of range.`
-    }
+  title: "Quiz Maker",
+  quizFallbackTitle: "Quiz",
+  startCount: n => `This quiz has ${n} questions:`,
+  startCategory: (n, cat) => `• ${n} questions from ${cat}`,
+  startExtra1: "• Correct and wrong answers are explained at the end",
+  startExtra2: "• Questions and answers are shuffled every time",
+  startBtn: "Start Quiz",
+  counter: (i, n) => `Question ${i} of ${n}`,
+  prev: "Previous",
+  next: "Next Question",
+  finish: "Show Results & Explanations",
+  resultsTitle: "Quiz Results",
+  restart: "Try Again",
+  reviewHeading: "Review and Explanations:",
+  correct: "✓ Correct",
+  wrong: "✗ Wrong",
+  questionShort: i => `Question ${i}`,
+  yourAnswer: "Your answer: ",
+  correctAnswer: "Correct answer: ",
+  explanation: "Explanation: ",
+  noAnswer: "No answer given",
+  mustSelect: "Please select an option first!",
+  score: (s, t) => `${s} of ${t} (${Math.round((s / t) * 100)}%)`,
+  categoryScore: (cat, s, t) => `${cat}: ${s} of ${t}`,
+  errors: {
+    empty: "No JSON was entered.",
+    parse: "Invalid JSON: ",
+    noQuestions: "The \"questions\" list is empty or missing.",
+    badQuestion: i => `Question ${i} is missing required fields.`,
+    badOptions: i => `Question ${i} needs at least two options.`,
+    badCorrect: i => `The \"correct\" index in question ${i} is out of range.`
   }
 };
 
 /* ============================================================
  * 2) State + helpers
  * ============================================================ */
-let interfaceMode = "both";   // "ku" | "en" | "both"
-let currentLang = "ku";
-let quiz = null;              // normalized, bilingual quiz
-let questions = [];           // flat, ordered questions (with bilingual text)
+let quiz = null;              // normalized quiz
+let questions = [];           // flat, ordered questions
 let quizQuestions = [];
 let currentQuestionIndex = 0;
 let userAnswers = [];
@@ -226,21 +170,11 @@ const $ = id => document.getElementById(id);
 
 function safeText(value) { return value == null ? "" : String(value).trim(); }
 
-/* Kurdish digits only when the interface is Kurdish. */
-function td(value) {
-  const s = String(value);
-  if (currentLang !== "ku") return s;
-  const digits = ["٠","١","٢","٣","٤","٥","٦","٧","٨","٩"];
-  return s.replace(/[0-9]/g, d => digits[Number(d)]);
-}
-
-/* Bilingual pair -> string in the active language, with cross-language fallback. */
+/* Prefer English text; fall back to the Kurdish base key when English is absent. */
 function pick(pair) {
   if (!pair || typeof pair !== "object") return safeText(pair);
-  return safeText(pair[currentLang]) || safeText(pair.ku) || safeText(pair.en) || "";
+  return safeText(pair.en) || safeText(pair.ku) || "";
 }
-
-function t() { return UI[currentLang]; }
 
 function shuffleArray(array) {
   const result = [...array];
@@ -252,51 +186,43 @@ function shuffleArray(array) {
 }
 
 /* ============================================================
- * 3) Normalize the input JSON into a bilingual quiz object
+ * 3) Normalize the input JSON
  * ============================================================ */
-function pair(ku, en) { return { ku: safeText(ku), en: safeText(en) }; }
+function pair(base, en) { return { ku: safeText(base), en: safeText(en) }; }
 
 function normalizeQuiz(raw) {
-  if (!raw || typeof raw !== "object") throw { message: UI[currentLang].errors.parse + "not an object" };
+  if (!raw || typeof raw !== "object") throw { message: UI.errors.parse + "not an object" };
 
   const meta = raw.meta && typeof raw.meta === "object" ? raw.meta : {};
-  const mode = ["ku", "en", "both"].includes(meta.interface) ? meta.interface : "both";
 
   const rawQuestions = Array.isArray(raw.questions) ? raw.questions : [];
-  if (!rawQuestions.length) throw { message: UI[currentLang].errors.noQuestions };
+  if (!rawQuestions.length) throw { message: UI.errors.noQuestions };
 
   const questions = rawQuestions.map((q, index) => {
-    if (!q || typeof q !== "object") throw { message: UI[currentLang].errors.badQuestion(index + 1) };
+    if (!q || typeof q !== "object") throw { message: UI.errors.badQuestion(index + 1) };
 
     const question = pair(q.question, q.question_en);
     const category = pair(q.category, q.category_en);
     const explanation = pair(q.explanation, q.explanation_en);
 
-    let optionsKu = Array.isArray(q.options) ? q.options.map(safeText) : [];
+    let optionsBase = Array.isArray(q.options) ? q.options.map(safeText) : [];
     let optionsEn = Array.isArray(q.options_en) ? q.options_en.map(safeText) : [];
 
-    if (!optionsKu.length && optionsEn.length) optionsKu = [...optionsEn];
-    if (!optionsEn.length && optionsKu.length) optionsEn = [...optionsKu];
-    if (optionsKu.length < 2) throw { message: UI[currentLang].errors.badOptions(index + 1) };
+    if (!optionsBase.length && optionsEn.length) optionsBase = [...optionsEn];
+    if (!optionsEn.length && optionsBase.length) optionsEn = [...optionsBase];
+    if (optionsBase.length < 2) throw { message: UI.errors.badOptions(index + 1) };
 
     // Keep both option arrays the same length so shuffling stays in sync.
-    const length = Math.min(optionsKu.length, optionsEn.length);
-    optionsKu = optionsKu.slice(0, length);
+    const length = Math.min(optionsBase.length, optionsEn.length);
+    optionsBase = optionsBase.slice(0, length);
     optionsEn = optionsEn.slice(0, length);
 
     const correct = Number(q.correct);
     if (!Number.isInteger(correct) || correct < 0 || correct >= length) {
-      throw { message: UI[currentLang].errors.badCorrect(index + 1) };
+      throw { message: UI.errors.badCorrect(index + 1) };
     }
 
-    return {
-      category,
-      question,
-      explanation,
-      optionsKu,
-      optionsEn,
-      correct
-    };
+    return { category, question, explanation, optionsKu: optionsBase, optionsEn, correct };
   });
 
   const intro = Array.isArray(meta.intro) ? meta.intro : [];
@@ -306,7 +232,6 @@ function normalizeQuiz(raw) {
   for (let i = 0; i < introLen; i++) introPairs.push(pair(intro[i], introEn[i]));
 
   return {
-    interfaceMode: mode,
     title: pair(meta.title, meta.title_en),
     subtitle: pair(meta.subtitle, meta.subtitle_en),
     intro: introPairs,
@@ -326,7 +251,7 @@ const CATEGORY_COLORS = [
   { bg: "bg-cyan-900/60", text: "text-cyan-300", border: "border-cyan-700" }
 ];
 
-function categoryKey(q) { return q.category.ku || q.category.en || "—"; }
+function categoryKey(q) { return q.category.en || q.category.ku || "—"; }
 
 function prepareCategories() {
   categoryOrder = [...new Set(questions.map(categoryKey))];
@@ -355,11 +280,7 @@ function createQuiz() {
   return result;
 }
 
-function optionAt(q, index) {
-  return currentLang === "en"
-    ? (q.optionsEn[index] || q.optionsKu[index] || "")
-    : (q.optionsKu[index] || q.optionsEn[index] || "");
-}
+function optionAt(q, index) { return q.optionsEn[index] || q.optionsKu[index] || ""; }
 
 const startScreen = $("start-screen");
 const quizScreen = $("quiz-screen");
@@ -378,7 +299,7 @@ const reviewContainer = $("review-container");
 function loadQuestion() {
   const q = quizQuestions[currentQuestionIndex];
 
-  questionCounter.textContent = t().counter(currentQuestionIndex + 1, quizQuestions.length);
+  questionCounter.textContent = UI.counter(currentQuestionIndex + 1, quizQuestions.length);
 
   const progressPercent = ((currentQuestionIndex + 1) / quizQuestions.length) * 100;
   progressBar.style.width = `${progressPercent}%`;
@@ -387,7 +308,7 @@ function loadQuestion() {
   categoryBadge.textContent = pick(q.category);
   categoryBadge.className = `${color.bg} ${color.text} px-3 py-1 rounded-full text-xs border ${color.border}`;
 
-  questionText.textContent = `${td(currentQuestionIndex + 1)}. ${pick(q.question)}`;
+  questionText.textContent = `${currentQuestionIndex + 1}. ${pick(q.question)}`;
 
   optionsContainer.replaceChildren();
 
@@ -396,7 +317,7 @@ function loadQuestion() {
     const selected = userAnswers[currentQuestionIndex] === index;
 
     button.type = "button";
-    button.className = "w-full text-right p-4 rounded-xl border transition duration-200 font-medium " +
+    button.className = "w-full text-left p-4 rounded-xl border transition duration-200 font-medium " +
       (selected
         ? "bg-emerald-700 border-emerald-400 text-white"
         : "bg-slate-700/60 hover:bg-slate-700 border-slate-600 text-slate-200");
@@ -407,8 +328,8 @@ function loadQuestion() {
     optionsContainer.appendChild(button);
   });
 
-  prevBtn.textContent = t().prev;
-  nextBtn.textContent = currentQuestionIndex === quizQuestions.length - 1 ? t().finish : t().next;
+  prevBtn.textContent = UI.prev;
+  nextBtn.textContent = currentQuestionIndex === quizQuestions.length - 1 ? UI.finish : UI.next;
 
   prevBtn.classList.toggle("hidden", currentQuestionIndex === 0);
   nextBtn.classList.toggle("hidden", userAnswers[currentQuestionIndex] === null);
@@ -421,7 +342,7 @@ function selectOption(index) {
 
 function nextQuestion() {
   if (userAnswers[currentQuestionIndex] === null) {
-    alert(t().mustSelect);
+    alert(UI.mustSelect);
     return;
   }
   if (currentQuestionIndex < quizQuestions.length - 1) {
@@ -468,11 +389,11 @@ function showResults() {
     const status = document.createElement("span");
     status.className = "text-xs font-bold px-2.5 py-1 rounded-full " +
       (isCorrect ? "bg-emerald-800 text-emerald-200" : "bg-rose-800 text-rose-200");
-    status.textContent = isCorrect ? t().correct : t().wrong;
+    status.textContent = isCorrect ? UI.correct : UI.wrong;
 
     const number = document.createElement("span");
     number.className = "text-xs text-slate-400";
-    number.textContent = t().questionShort(index + 1);
+    number.textContent = UI.questionShort(index + 1);
 
     topRow.append(status, number);
 
@@ -482,19 +403,19 @@ function showResults() {
 
     const question = document.createElement("h4");
     question.className = "font-semibold text-slate-100 mb-3";
-    question.textContent = `${td(index + 1)}. ${pick(q.question)}`;
+    question.textContent = `${index + 1}. ${pick(q.question)}`;
 
     const yourAnswer = document.createElement("p");
     yourAnswer.className = "text-sm mb-2 text-slate-300";
 
     const yourLabel = document.createElement("strong");
-    yourLabel.textContent = t().yourAnswer;
+    yourLabel.textContent = UI.yourAnswer;
 
     const yourText = document.createElement("span");
     yourText.className = isCorrect ? "text-emerald-400 font-bold" : "text-rose-400 font-bold";
     yourText.textContent = userChoice !== null
       ? `${String.fromCharCode(65 + userChoice)}) ${optionAt(q, userChoice)}`
-      : t().noAnswer;
+      : UI.noAnswer;
 
     yourAnswer.append(yourLabel, yourText);
     card.append(topRow, category, question, yourAnswer);
@@ -504,7 +425,7 @@ function showResults() {
       correctAnswer.className = "text-sm mb-2 text-slate-300";
 
       const label = document.createElement("strong");
-      label.textContent = t().correctAnswer;
+      label.textContent = UI.correctAnswer;
 
       const answer = document.createElement("span");
       answer.className = "text-emerald-400 font-bold";
@@ -518,19 +439,19 @@ function showResults() {
     explanation.className = "mt-3 pt-3 border-t border-slate-700/60 text-xs sm:text-sm text-slate-300 bg-slate-900/40 p-3 rounded-lg";
 
     const explanationLabel = document.createElement("strong");
-    explanationLabel.textContent = t().explanation;
+    explanationLabel.textContent = UI.explanation;
 
     explanation.append(explanationLabel, document.createTextNode(pick(q.explanation)));
     card.appendChild(explanation);
     reviewContainer.appendChild(card);
   });
 
-  scoreDisplay.textContent = t().score(score, quizQuestions.length);
+  scoreDisplay.textContent = UI.score(score, quizQuestions.length);
 
   categoryScores.replaceChildren();
   for (const [key, result] of Object.entries(scoresByCategory)) {
     const line = document.createElement("p");
-    line.textContent = t().categoryScore(categoryLabel(key), result.correct, result.total);
+    line.textContent = UI.categoryScore(categoryLabel(key), result.correct, result.total);
     categoryScores.appendChild(line);
   }
 }
@@ -549,7 +470,7 @@ function restartQuiz() {
  * 5) Start screen
  * ============================================================ */
 function renderStartScreen() {
-  $("start-count").textContent = t().startCount(questions.length);
+  $("start-count").textContent = UI.startCount(questions.length);
 
   const list = $("start-list");
   list.replaceChildren();
@@ -557,11 +478,11 @@ function renderStartScreen() {
   for (const key of categoryOrder) {
     const count = questions.filter(q => categoryKey(q) === key).length;
     const li = document.createElement("li");
-    li.textContent = t().startCategory(count, categoryLabel(key));
+    li.textContent = UI.startCategory(count, categoryLabel(key));
     list.appendChild(li);
   }
 
-  for (const extra of [t().startExtra1, t().startExtra2]) {
+  for (const extra of [UI.startExtra1, UI.startExtra2]) {
     const li = document.createElement("li");
     li.textContent = extra;
     list.appendChild(li);
@@ -575,90 +496,42 @@ function renderStartScreen() {
     list.appendChild(li);
   }
 
-  $("start-btn").textContent = t().startBtn;
+  $("start-btn").textContent = UI.startBtn;
 }
 
 /* ============================================================
- * 6) Language handling
- * ============================================================ */
-function applyLanguage() {
-  const root = $("html-root");
-  root.lang = currentLang;
-  root.dir = currentLang === "ku" ? "rtl" : "ltr";
-
-  document.querySelectorAll("[data-ui]").forEach(el => {
-    el.hidden = el.getAttribute("data-ui") !== currentLang;
-  });
-  $("lang-label").textContent = currentLang === "ku" ? "English" : "کوردی";
-  document.title = t().title;
-
-  // Re-render whatever part of the quiz is currently visible.
-  if (!quiz) return;
-  $("quiz-title").textContent = pick(quiz.title) || t().quizFallbackTitle;
-  const subtitle = pick(quiz.subtitle);
-  $("quiz-subtitle").textContent = subtitle;
-  $("quiz-subtitle").className = subtitle
-    ? "text-slate-400 text-sm sm:text-base"
-    : "hidden";
-  $("results-title").textContent = t().resultsTitle;
-  $("review-heading").textContent = t().reviewHeading;
-  $("restart-btn").textContent = t().restart;
-  renderStartScreen();
-
-  if (!quizScreen.classList.contains("hidden")) loadQuestion();
-  if (!resultsScreen.classList.contains("hidden")) showResults();
-}
-
-function applyInterfaceMode() {
-  if (interfaceMode === "ku" || interfaceMode === "en") {
-    currentLang = interfaceMode;
-    $("lang-btn").classList.add("hidden");
-  } else {
-    $("lang-btn").classList.remove("hidden");
-  }
-  applyLanguage();
-}
-
-$("lang-btn").addEventListener("click", () => {
-  currentLang = currentLang === "ku" ? "en" : "ku";
-  applyLanguage();
-});
-
-/* ============================================================
- * 7) Builder: template, file loading, validation, build
+ * 6) Builder: template, file loading, validation, build
  * ============================================================ */
 const TEMPLATE_JSON = String.raw`{
   "meta": {
-    "slug": "sample-quiz.html",
-    "title": "تاقیکردنەوەی نموونە",
+    "title": "Sample Quiz",
     "title_en": "Sample Quiz",
-    "subtitle": "تاقیکردنەوەیەکی نموونە بۆ نیشاندانی فۆرماتی JSON",
+    "subtitle": "A sample quiz that shows the JSON format",
     "subtitle_en": "A sample quiz that shows the JSON format",
-    "interface": "both",
-    "intro": ["ڕوونکردنەوەی وەڵامەکان لە کۆتاییدا نیشان دەدرێن"],
+    "intro": ["Explanations are shown at the end"],
     "intro_en": ["Explanations are shown at the end"]
   },
   "questions": [
     {
-      "category": "گشتی",
+      "category": "General",
       "category_en": "General",
-      "question": "پایتەختی فەرەنسا کام شارە؟",
+      "question": "What is the capital of France?",
       "question_en": "What is the capital of France?",
-      "options": ["پاريس", "لیۆن", "بەرلین", "ڕۆما"],
+      "options": ["Paris", "Lyon", "Berlin", "Rome"],
       "options_en": ["Paris", "Lyon", "Berlin", "Rome"],
       "correct": 0,
-      "explanation": "پاريس پایتەختی فەرەنسایە.",
+      "explanation": "Paris is the capital of France.",
       "explanation_en": "Paris is the capital of France."
     },
     {
-      "category": "زانست",
+      "category": "Science",
       "category_en": "Science",
-      "question": "چەند هەسارە لە کۆمەڵەی خۆردا هەیە؟",
+      "question": "How many planets are in the solar system?",
       "question_en": "How many planets are in the solar system?",
-      "options": ["٧", "٨", "٩", "١٠"],
+      "options": ["7", "8", "9", "10"],
       "options_en": ["7", "8", "9", "10"],
       "correct": 1,
-      "explanation": "کۆمەڵەی خۆر ٨ هەسارەی هەیە.",
+      "explanation": "The solar system has 8 planets.",
       "explanation_en": "The solar system has 8 planets."
     }
   ]
@@ -678,13 +551,13 @@ function showError(message) {
 function buildQuizFromJson(text) {
   showError("");
   const trimmed = safeText(text);
-  if (!trimmed) { showError(t().errors.empty); return; }
+  if (!trimmed) { showError(UI.errors.empty); return; }
 
   let raw;
   try {
     raw = JSON.parse(trimmed);
   } catch (error) {
-    showError(t().errors.parse + error.message);
+    showError(UI.errors.parse + error.message);
     return;
   }
 
@@ -698,29 +571,23 @@ function buildQuizFromJson(text) {
 
   quiz = normalized;
   questions = quiz.questions;
-  interfaceMode = quiz.interfaceMode;
   prepareCategories();
 
-  // Show the quiz view.
   $("builder-view").classList.add("hidden");
   $("quiz-view").classList.remove("hidden");
   startScreen.classList.remove("hidden");
   quizScreen.classList.add("hidden");
   resultsScreen.classList.add("hidden");
 
-  // Pick a starting language from the interface mode / saved choice.
-  if (interfaceMode === "ku" || interfaceMode === "en") {
-    currentLang = interfaceMode;
-  } else {
-    let saved = "ku";
-    try {
-      const value = localStorage.getItem("dashboard_lang");
-      if (value === "ku" || value === "en") saved = value;
-    } catch { /* ignore */ }
-    currentLang = saved;
-  }
+  $("quiz-title").textContent = pick(quiz.title) || UI.quizFallbackTitle;
+  const subtitle = pick(quiz.subtitle);
+  $("quiz-subtitle").textContent = subtitle;
+  $("quiz-subtitle").className = subtitle ? "text-slate-400 text-sm sm:text-base" : "hidden";
+  $("results-title").textContent = UI.resultsTitle;
+  $("review-heading").textContent = UI.reviewHeading;
+  $("restart-btn").textContent = UI.restart;
 
-  applyInterfaceMode();
+  renderStartScreen();
 }
 
 $("template-btn").addEventListener("click", () => {
@@ -741,15 +608,10 @@ $("file-input").addEventListener("change", event => {
 
 $("build-btn").addEventListener("click", () => buildQuizFromJson($("json-input").value));
 
-function showBuilder() {
+$("editor-btn").addEventListener("click", () => {
   $("quiz-view").classList.add("hidden");
   $("builder-view").classList.remove("hidden");
-  interfaceMode = "both";
-  $("lang-btn").classList.remove("hidden");
-  applyLanguage();
-}
-
-$("editor-btn").addEventListener("click", showBuilder);
+});
 
 $("start-btn").addEventListener("click", () => {
   quizQuestions = createQuiz();
@@ -775,19 +637,10 @@ document.addEventListener("keydown", event => {
 });
 
 /* ============================================================
- * 8) Init
+ * 7) Init
  * ============================================================ */
-(function init() {
-  let saved = "ku";
-  try {
-    const value = localStorage.getItem("dashboard_lang");
-    if (value === "ku" || value === "en") saved = value;
-  } catch { /* ignore */ }
-  currentLang = saved;
-  interfaceMode = "both";
-  applyLanguage();
-  $("json-input").value = TEMPLATE_JSON;
-})();
+document.title = UI.title;
+$("json-input").value = TEMPLATE_JSON;
 </script>
 </body>
 </html>

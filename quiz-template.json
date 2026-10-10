@@ -2,50 +2,42 @@
   "_instructions": [
     "TEMPLATE for AI agents: fill in this JSON to build a quiz for quiz-maker.html.",
     "Rules:",
-    "1. meta.interface = 'ku' (Kurdish UI only), 'en' (English UI only), or 'both' (language switch).",
-    "2. Every text field has a Kurdish base key and an English '_en' key. You may fill only one language; the other falls back automatically.",
-    "3. meta.title / meta.title_en: quiz name shown at the top. meta.slug: output filename (optional).",
-    "4. meta.subtitle / subtitle_en: one line under the title (optional).",
-    "5. meta.intro / intro_en: optional list of extra bullet lines for the start screen (question counts are added automatically).",
-    "6. questions: array. Each item has category/category_en, question/question_en, options/options_en, correct (0-based index), explanation/explanation_en.",
-    "7. options and options_en must be the same length and same order; 'correct' points into that order.",
-    "8. Remove this '_instructions' key when you are done (optional but cleaner)."
+    "1. meta.title / meta.title_en: quiz name shown at the top. meta.subtitle / meta.subtitle_en: optional one line under it.",
+    "2. meta.intro / meta.intro_en: optional list of extra bullet lines for the start screen (question counts are added automatically).",
+    "3. questions: array. Each item has category/category_en, question/question_en, options/options_en, correct (0-based index), explanation/explanation_en.",
+    "4. options and options_en must be the same length and same order; 'correct' points into that order.",
+    "5. Every text field has an English '_en' key. If you only have one language, you may fill just one side; the interface prefers English and falls back to the base key.",
+    "6. Remove this '_instructions' key when you are done (optional but cleaner)."
   ],
   "meta": {
-    "slug": "sample-quiz.html",
-    "title": "تاقیکردنەوەی نموونە",
+    "title": "Sample Quiz",
     "title_en": "Sample Quiz",
-    "subtitle": "تاقیکردنەوەیەکی نموونە بۆ نیشاندانی فۆرماتی JSON",
+    "subtitle": "A sample quiz that shows the JSON format",
     "subtitle_en": "A sample quiz that shows the JSON format",
-    "interface": "both",
-    "intro": [
-      "ڕوونکردنەوەی وەڵامەکان لە کۆتاییدا نیشان دەدرێن"
-    ],
-    "intro_en": [
-      "Explanations are shown at the end"
-    ]
+    "intro": ["Explanations are shown at the end"],
+    "intro_en": ["Explanations are shown at the end"]
   },
   "questions": [
     {
-      "category": "گشتی",
+      "category": "General",
       "category_en": "General",
-      "question": "پایتەختی فەرەنسا کام شارە؟",
+      "question": "What is the capital of France?",
       "question_en": "What is the capital of France?",
-      "options": ["پاريس", "لیۆن", "بەرلین", "ڕۆما"],
+      "options": ["Paris", "Lyon", "Berlin", "Rome"],
       "options_en": ["Paris", "Lyon", "Berlin", "Rome"],
       "correct": 0,
-      "explanation": "پاريس پایتەختی فەرەنسایە.",
+      "explanation": "Paris is the capital of France.",
       "explanation_en": "Paris is the capital of France."
     },
     {
-      "category": "زانست",
+      "category": "Science",
       "category_en": "Science",
-      "question": "چەند هەسارە لە کۆمەڵەی خۆردا هەیە؟",
+      "question": "How many planets are in the solar system?",
       "question_en": "How many planets are in the solar system?",
-      "options": ["٧", "٨", "٩", "١٠"],
+      "options": ["7", "8", "9", "10"],
       "options_en": ["7", "8", "9", "10"],
       "correct": 1,
-      "explanation": "کۆمەڵەی خۆر ٨ هەسارەی هەیە.",
+      "explanation": "The solar system has 8 planets.",
       "explanation_en": "The solar system has 8 planets."
     }
   ]

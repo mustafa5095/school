@@ -37,16 +37,16 @@ creates a `Quizes` folder containing a `Week1` subfolder in the webpage.
 
 ## Quiz maker
 
-`quiz-maker.html` builds a playable quiz from pasted JSON (see
-`quiz-template.json` for the schema, meant to be handed to an AI). It replicates
-the engine of `quiz-2nd-arabicreligion.html`: shuffled questions per category,
-shuffled options, progress bar, per-category scores, review with explanations,
-keyboard navigation and Kurdish digits.
+`quiz-maker.html` is a private English-only tool (linked from `README.md`, not
+listed in `files.json`, so it never shows on the dashboard). It builds a
+playable quiz from pasted JSON (schema in `quiz-template.json`, meant to be
+handed to an AI). It replicates the engine of `quiz-2nd-arabicreligion.html`:
+shuffled questions per category, shuffled options, progress bar, per-category
+scores, review with explanations and keyboard navigation.
 
-`meta.interface` picks the interface language: `"ku"` (Kurdish only, no switch),
-`"en"` (English only), or `"both"` (language switch shown). Content is bilingual:
-each text field has a Kurdish base key and an English `_en` key, and the other
-language falls back automatically when one is missing.
+Quiz content may be Kurdish, English, or both: each text field has a base key
+and an English `_en` key, and the interface prefers English with a fallback to
+the base key.
 
 ## Category descriptions
 
