@@ -13,6 +13,13 @@ committing. Never add co-author lines or any mention of AI or an AI agent to
 commit messages, and never hardcode or expose the owner's email anywhere in the
 repository.
 
+## New pages
+
+`template.html` is a full starter page in the repository's style (Tailwind CDN,
+Vazirmatn font, slate/emerald palette, RTL, DOM-built UI, Kurdish digits). Copy
+it to create a new page, then register that page in `files.json` and
+`description.toml`. Do not list `template.html` itself as a page.
+
 ## File metadata (`description.toml`)
 
 One section per file: `["<filename>.html"]` with keys:

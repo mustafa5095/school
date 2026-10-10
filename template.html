@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<!--
+  TEMPLATE — copy this file to start a new page in the same style.
+
+  How to use (for AI agents and humans):
+    1. Copy this file to a new name, e.g. `quiz-week3.html` or `notes-unit2.html`.
+    2. Replace the placeholders marked with `TODO` (title, headings, content, script data).
+    3. Register the page so the dashboard shows it:
+         - add the filename to `files.json`
+         - add a `["<filename>"]` section to `description.toml` with
+           `title`, `description`, `title_en`, `description_en`, and
+           `category` (Kurdish) / `category_en` (English).
+
+  Style rules (keep new pages consistent):
+    - Tailwind via CDN, no build step.
+    - Page shell: `bg-slate-900 text-slate-100`, content in a
+      `max-w-3xl w-full bg-slate-800 rounded-2xl shadow-2xl border border-slate-700`.
+    - Accent color is emerald (buttons, headings, highlights).
+    - Body font is Vazirmatn, layout is RTL for Kurdish.
+    - Interactive UI is built with plain DOM APIs (`document.createElement`),
+      never `innerHTML`, and every control is a real <button>.
+    - Numbers shown in the UI use Kurdish digits via `toKurdishDigits()`.
+-->
+<html lang="ku" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- TODO: page title (also used by the browser tab) -->
+<title>ناونیشانی پەڕە</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+body{font-family:'Vazirmatn',sans-serif}
+button:focus-visible{outline:2px solid #34d399;outline-offset:3px}
+</style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col items-center justify-center p-4">
+<div class="max-w-3xl w-full bg-slate-800 rounded-2xl shadow-2xl p-6 sm:p-8 border border-slate-700">
+
+  <!-- ================= Header ================= -->
+  <header class="text-center mb-8">
+    <!-- TODO: main heading -->
+    <h1 class="text-2xl sm:text-3xl font-bold text-emerald-400 mb-2">ناونیشانی سەرەکی</h1>
+    <!-- TODO: one-line subtitle / description -->
+    <p class="text-slate-400 text-sm sm:text-base">کورتەیەک دەربارەی ئەم پەڕەیە</p>
+  </header>
+
+  <!-- ================= Intro / note box ================= -->
+  <section class="mb-6 bg-slate-700/50 p-6 rounded-xl border border-slate-600 inline-block w-full">
+    <p class="text-lg font-medium mb-2">بەشێکی کورت:</p>
+    <!-- TODO: bullet list of what this page contains -->
+    <ul class="text-slate-300 text-sm space-y-1 text-right inline-block">
+      <li>• خاڵی یەکەم</li>
+      <li>• خاڵی دووەم</li>
+    </ul>
+  </section>
+
+  <!-- ================= Primary action ================= -->
+  <div class="text-center mb-8">
+    <button type="button" id="primary-btn"
+      class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition text-lg">
+      دەستپێکردن
+    </button>
+  </div>
+
+  <!-- ================= Content card ================= -->
+  <section id="content" class="hidden">
+    <div class="flex justify-between items-center mb-4 gap-3">
+      <h2 class="text-lg sm:text-xl font-semibold text-slate-100">ناونیشانی بەش</h2>
+      <span class="bg-emerald-900/60 text-emerald-300 px-3 py-1 rounded-full text-xs border border-emerald-700">
+        <!-- TODO: short badge label -->
+        پۆل
+      </span>
+    </div>
+
+    <!-- Example of a selectable option list (like a quiz) -->
+    <div id="options-container" class="space-y-3 mb-6">
+      <!-- Options are generated in the script below -->
+    </div>
+
+    <div class="flex justify-between items-center gap-3 mt-6 pt-4 border-t border-slate-700">
+      <button type="button" id="secondary-btn"
+        class="bg-slate-700 hover:bg-slate-600 text-white font-semibold py-2 px-5 rounded-xl">
+        دووەمە
+      </button>
+    </div>
+  </section>
+
+  <!-- ================= Result / summary ================= -->
+  <section id="result" class="hidden mt-6 pt-6 border-t border-slate-700 text-center">
+    <h2 class="text-2xl font-bold text-emerald-400 mb-3">ئەنجام</h2>
+    <p id="result-text" class="text-slate-300 mb-5"></p>
+    <button type="button" id="restart-btn"
+      class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2 px-6 rounded-xl text-sm">
+      دووبارە
+    </button>
+  </section>
+
+  <!-- ================= Footer ================= -->
+  <footer class="mt-8 pt-4 border-t border-slate-700/60 text-center text-xs text-slate-500">
+    <!-- TODO: footer note -->
+    پەڕەی نموونە
+  </footer>
+</div>
+
+<script>
+"use strict";
+
+/* ============================================================
+ * Placeholder data — TODO: replace with the real content.
+ * Keep the same shape so the rendering code below still works.
+ * ============================================================ */
+const items = [
+  { text: "بژاردەی یەکەم", correct: true },
+  { text: "بژاردەی دووەم", correct: false },
+  { text: "بژاردەی سێیەم", correct: false }
+];
+
+const $ = id => document.getElementById(id);
+const primaryBtn = $("primary-btn");
+const secondaryBtn = $("secondary-btn");
+const restartBtn = $("restart-btn");
+const content = $("content");
+const result = $("result");
+const optionsContainer = $("options-container");
+const resultText = $("result-text");
+
+/* Convert Western digits in a value to Kurdish digits for display. */
+function toKurdishDigits(value) {
+  const digits = ["٠","١","٢","٣","٤","٥","٦","٧","٨","٩"];
+  return String(value).replace(/[0-9]/g, digit => digits[Number(digit)]);
+}
+
+/* Fisher-Yates shuffle. Returns a new array and does not mutate the source. */
+function shuffleArray(array) {
+  const copy = [...array];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+/* Render the options as accessible buttons (no innerHTML). */
+function renderOptions(options) {
+  optionsContainer.replaceChildren();
+  options.forEach((option, index) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "w-full text-right p-4 rounded-xl border transition duration-200 font-medium "
+      + "bg-slate-700/60 hover:bg-slate-700 border-slate-600 text-slate-200";
+    button.textContent = `${String.fromCharCode(65 + index)}) ${option.text}`;
+    button.addEventListener("click", () => {
+      resultText.textContent = option.correct ? "ڕاستە ✓" : "هەڵەیە ✗";
+      result.classList.remove("hidden");
+    });
+    optionsContainer.appendChild(button);
+  });
+}
+
+/* Wire up the page. TODO: adapt this to the real interaction. */
+primaryBtn.addEventListener("click", () => {
+  renderOptions(shuffleArray(items));
+  content.classList.remove("hidden");
+  result.classList.add("hidden");
+});
+
+secondaryBtn.addEventListener("click", () => {
+  content.classList.add("hidden");
+});
+
+restartBtn.addEventListener("click", () => {
+  result.classList.add("hidden");
+  content.classList.remove("hidden");
+});
+</script>
+</body>
+</html>
