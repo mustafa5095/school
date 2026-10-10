@@ -5,11 +5,13 @@
     "1. meta.language: which language(s) to use — \"en\", \"ku\", \"both\", or \"auto\" (default). \"auto\" keeps both languages when the input carries them, otherwise the single language present.",
     "2. meta.title / meta.title_en: quiz name shown at the top. meta.subtitle / meta.subtitle_en: optional one line under it.",
     "3. meta.after_test / meta.after_test_en: optional message shown on the results screen after the quiz is finished. Newlines are preserved.",
-    "4. meta.intro / meta.intro_en: optional list of extra bullet lines for the start screen (category counts are added automatically). If omitted, two default bullets are used.",
-    "5. questions: array. Each item has category/category_en, question/question_en, options/options_en, correct (0-based index), explanation/explanation_en.",
-    "6. options and options_en must be the same length and same order; 'correct' points into that order.",
-    "7. Base keys are Kurdish; the '_en' keys are English. You may fill only one language; the other falls back automatically. With meta.language \"both\" (or \"auto\" when both languages are present) the quiz shows a Kurdish/English switch.",
-    "8. Remove this '_instructions' key when you are done (optional but cleaner)."
+    "4. meta.author / meta.author_en: optional quiz author. Leave it out or empty for no line; otherwise it shows as \"Quiz Author - <name>\" (Kurdish: \"نووسەری تاقیکردنەوە - <ناو>\").",
+    "5. meta.intro / meta.intro_en: optional list of extra bullet lines for the start screen (category counts are added automatically). If omitted, two default bullets are used.",
+    "6. questions: array. Each item has category/category_en, question/question_en, options/options_en, correct (0-based index), explanation/explanation_en.",
+    "7. options and options_en must be the same length and same order; 'correct' points into that order.",
+    "8. Base keys are Kurdish; the '_en' keys are English. You may fill only one language; the other falls back automatically. With meta.language \"both\" (or \"auto\" when both languages are present) the quiz shows a Kurdish/English switch.",
+    "9. Direction is auto-detected from the text on screen: Kurdish text renders RTL and English/Latin text LTR, so no direction flag is needed.",
+    "10. Remove this '_instructions' key when you are done (optional but cleaner)."
   ],
   "meta": {
     "language": "auto",
@@ -18,7 +20,9 @@
     "subtitle": "تاقیکردنەوەیەکی نموونە بۆ نیشاندانی شێوازی JSON",
     "subtitle_en": "A sample quiz that shows the JSON format",
     "after_test": "سوپاس بۆ بەشداریکردنت!",
-    "after_test_en": "Thanks for taking the quiz!"
+    "after_test_en": "Thanks for taking the quiz!",
+    "author": "ناوی نووسەر",
+    "author_en": "Author Name"
   },
   "questions": [
     {
