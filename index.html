@@ -315,11 +315,15 @@ function getSourceLabel() {
 function getMetadata(file) { return metadata[file] || {}; }
 function getTitle(file) {
     const meta = getMetadata(file);
-    return safeText(meta[`title_${currentLang}`] || (currentLang === "en" ? meta.title : meta.title_en) || meta.title || file.split("/").pop());
+    const primary = currentLang === "en" ? meta.title_en : meta.title;
+    const secondary = currentLang === "en" ? meta.title : meta.title_en;
+    return safeText(primary) || safeText(secondary) || safeText(meta.title) || file.split("/").pop();
 }
 function getDescription(file) {
     const meta = getMetadata(file);
-    return safeText(meta[`description_${currentLang}`] || (currentLang === "en" ? meta.description : meta.description_en) || meta.description || meta.description_en || translations[currentLang].noDesc);
+    const primary = currentLang === "en" ? meta.description_en : meta.description;
+    const secondary = currentLang === "en" ? meta.description : meta.description_en;
+    return safeText(primary) || safeText(secondary) || safeText(meta.description) || safeText(meta.description_en) || translations[currentLang].noDesc;
 }
 
 // Category values are virtual UI paths, not physical directory names.
