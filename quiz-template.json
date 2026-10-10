@@ -2,14 +2,16 @@
   "_instructions": [
     "TEMPLATE for AI agents: fill in this JSON to build a quiz for quiz-maker.html.",
     "Rules:",
-    "1. meta.title / meta.title_en: quiz name shown at the top. meta.subtitle / meta.subtitle_en: optional one line under it.",
-    "2. meta.intro / meta.intro_en: optional list of extra bullet lines for the start screen (category counts are added automatically). If omitted, two default bullets are used.",
-    "3. questions: array. Each item has category/category_en, question/question_en, options/options_en, correct (0-based index), explanation/explanation_en.",
-    "4. options and options_en must be the same length and same order; 'correct' points into that order.",
-    "5. Base keys are Kurdish; the '_en' keys are English. You may fill only one language; the other falls back automatically. If both are present, the quiz shows a Kurdish/English switch.",
-    "6. Remove this '_instructions' key when you are done (optional but cleaner)."
+    "1. meta.language: which language(s) to use — \"en\", \"ku\", \"both\", or \"auto\" (default). \"auto\" keeps both languages when the input carries them, otherwise the single language present.",
+    "2. meta.title / meta.title_en: quiz name shown at the top. meta.subtitle / meta.subtitle_en: optional one line under it.",
+    "3. meta.intro / meta.intro_en: optional list of extra bullet lines for the start screen (category counts are added automatically). If omitted, two default bullets are used.",
+    "4. questions: array. Each item has category/category_en, question/question_en, options/options_en, correct (0-based index), explanation/explanation_en.",
+    "5. options and options_en must be the same length and same order; 'correct' points into that order.",
+    "6. Base keys are Kurdish; the '_en' keys are English. You may fill only one language; the other falls back automatically. With meta.language \"both\" (or \"auto\" when both languages are present) the quiz shows a Kurdish/English switch.",
+    "7. Remove this '_instructions' key when you are done (optional but cleaner)."
   ],
   "meta": {
+    "language": "auto",
     "title": "تاقیکردنەوەی نموونە",
     "title_en": "Sample Quiz",
     "subtitle": "تاقیکردنەوەیەکی نموونە بۆ نیشاندانی شێوازی JSON",

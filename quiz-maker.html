@@ -6,10 +6,11 @@
   language switch.
 
   The QUIZ IT IS BUILT FROM supports both languages, exactly like
-  quiz-2nd-arabicreligion.html: if the JSON carries both Kurdish and English
-  text, the generated quiz shows a language switch and works in both; if it
-  carries only one language, the quiz stays in that language. RTL/LTR is chosen
-  to match the language in use.
+  quiz-2nd-arabicreligion.html. The optional meta.language key ("en", "ku",
+  "both" or "auto") chooses the language(s): "both" (and "auto" when the JSON
+  carries both Kurdish and English text) makes the generated quiz show a
+  language switch; "en" or "ku" fixes it to that single language. Without the
+  key it falls back to auto. RTL/LTR is chosen to match the language in use.
 
   This page is intentionally not listed in files.json (so it stays off the
   dashboard). It is linked from README.md instead.
@@ -48,7 +49,7 @@ textarea{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
     </header>
 
     <div class="mb-4 bg-slate-700/50 p-4 rounded-xl border border-slate-600 text-slate-300 text-xs sm:text-sm leading-relaxed">
-      Format: title, subtitle and a list of questions. Each question has a category, a question, options, a correct index and an explanation. Text may be Kurdish, English, or both: fill the base key for Kurdish and the <code class="text-emerald-300">_en</code> key for English, and the quiz will show a Kurdish/English switch.
+      Format: title, subtitle and a list of questions. Set <code class="text-emerald-300">meta.language</code> to <code class="text-emerald-300">en</code>, <code class="text-emerald-300">ku</code> or <code class="text-emerald-300">both</code> to force a single language or show a Kurdish/English switch; leave it out (or set <code class="text-emerald-300">auto</code>) and the quiz uses whichever languages the content provides. Text may be Kurdish, English, or both: fill the base key for Kurdish and the <code class="text-emerald-300">_en</code> key for English.
     </div>
 
     <textarea id="json-input" spellcheck="false" rows="16"
@@ -204,6 +205,7 @@ let userAnswers = [];
 let categoryOrder = [];
 let categoryColor = new Map();
 let currentLang = "en";       // language of the quiz being played
+let langMode = "auto";        // quiz language meta: "auto" | "en" | "ku" | "both"
 
 const $ = id => document.getElementById(id);
 
@@ -225,14 +227,76 @@ function pick(pair) {
 
 function t() { return QUIZ_UI[currentLang]; }
 
-function isBilingual() {
-  const pairHasBoth = pair => !!(pair && pair.ku && pair.en);
+/* Base and "_en" values joined into per-language strings after a language mode
+   is resolved, so a quiz fixed to one language still falls back per field. */
+function joinLang(baseArr, enArr, lang) {
+  const len = Math.max(baseArr.length, enArr.length);
+  const out = [];
+  for (let i = 0; i < len; i++) {
+    const v = lang === "en" ? (safeText(enArr[i]) || safeText(baseArr[i])) : (safeText(baseArr[i]) || safeText(enArr[i]));
+    if (v) out.push(v);
+  }
+  return out;
+}
+
+function pairHasBoth(pair) { return !!(pair && pair.ku && pair.en); }
+
+function contentHasBothLang() {
   if (quiz && (pairHasBoth(quiz.title) || pairHasBoth(quiz.subtitle))) return true;
   return questions.some(q =>
     pairHasBoth(q.question) || pairHasBoth(q.category) || pairHasBoth(q.explanation) ||
     (q.optionsKu || []).some((o, i) => o && (q.optionsEn || [])[i] && o !== q.optionsEn[i])
   );
 }
+
+/* Resolve the quiz language meta into a concrete mode. "auto" keeps both
+   languages when the input carries them, otherwise the single one present. */
+function resolveLangMode() {
+  if (langMode === "both") return "both";
+  if (langMode === "ku") return "ku";
+  if (langMode === "en") return "en";
+  if (contentHasBothLang()) return "both";
+  const hasKu = !!(quiz && (safeText(quiz.titleBoth.ku) || safeText(quiz.subtitleBoth.ku))) ||
+    questions.some(q => q.kuProvided);
+  return hasKu ? "ku" : "en";
+}
+
+function singlePair(value, mode) { return mode === "en" ? { ku: "", en: value } : { ku: value, en: "" }; }
+function singleOf(pair, mode) {
+  const v = mode === "en" ? (safeText(pair.en) || safeText(pair.ku)) : (safeText(pair.ku) || safeText(pair.en));
+  return singlePair(v, mode);
+}
+
+/* Apply a resolved mode: rebuild the rendered strings and mark bilingualism. */
+function applyLangMode(mode) {
+  if (!quiz) return;
+  if (mode === "both") {
+    quiz.title = quiz.titleBoth;
+    quiz.subtitle = quiz.subtitleBoth;
+    quiz.intro = quiz.introBoth;
+    for (const q of questions) {
+      q.category = q.categoryBoth; q.question = q.questionBoth;
+      q.explanation = q.explanationBoth;
+      q.optionsKu = [...q.optionsKuBoth]; q.optionsEn = [...q.optionsEnBoth];
+    }
+  } else {
+    quiz.title = singleOf(quiz.titleBoth, mode);
+    quiz.subtitle = singleOf(quiz.subtitleBoth, mode);
+    quiz.intro = quiz.introBoth.map(p => singleOf(p, mode));
+    for (const q of questions) {
+      q.category = singleOf(q.categoryBoth, mode);
+      q.question = singleOf(q.questionBoth, mode);
+      q.explanation = singleOf(q.explanationBoth, mode);
+      const options = joinLang(q.optionsKuBoth, q.optionsEnBoth, mode);
+      q.optionsKu = options;
+      q.optionsEn = [...options];
+    }
+  }
+  quiz.bilingual = (mode === "both");
+  quiz.lang = mode;
+}
+
+function isBilingual() { return !!(quiz && quiz.bilingual); }
 
 function shuffleArray(array) {
   const result = [...array];
@@ -279,7 +343,15 @@ function normalizeQuiz(raw) {
       throw { message: UI.errors.badCorrect(index + 1) };
     }
 
-    return { category, question, explanation, optionsKu, optionsEn, correct };
+    return {
+      category, question, explanation, optionsKu, optionsEn, correct,
+      kuProvided: !!(safeText(q.question) || safeText(q.category) || safeText(q.explanation) ||
+        (Array.isArray(q.options) && q.options.some(safeText))),
+      categoryBoth: { ku: category.ku, en: category.en },
+      questionBoth: { ku: question.ku, en: question.en },
+      explanationBoth: { ku: explanation.ku, en: explanation.en },
+      optionsKuBoth: [...optionsKu], optionsEnBoth: [...optionsEn]
+    };
   });
 
   const intro = Array.isArray(meta.intro) ? meta.intro : [];
@@ -296,8 +368,18 @@ function normalizeQuiz(raw) {
     title: pair(meta.title, meta.title_en),
     subtitle: pair(meta.subtitle, meta.subtitle_en),
     intro: introPairs,
-    questions
+    questions,
+    titleBoth: pair(meta.title, meta.title_en),
+    subtitleBoth: pair(meta.subtitle, meta.subtitle_en),
+    introBoth: introPairs,
+    langMode: readLangMode(meta)
   };
+}
+
+/* The optional quiz language meta: "en", "ku", "both", or "auto". */
+function readLangMode(meta) {
+  const value = safeText(meta.language || meta.lang).toLowerCase();
+  return (value === "en" || value === "ku" || value === "both") ? value : "auto";
 }
 
 /* ============================================================
@@ -631,6 +713,7 @@ function removeQuizToolbar() {
  * ============================================================ */
 const TEMPLATE_JSON = String.raw`{
   "meta": {
+    "language": "auto",
     "title": "تاقیکردنەوەی نموونە",
     "title_en": "Sample Quiz",
     "subtitle": "تاقیکردنەوەیەکی نموونە بۆ نیشاندانی شێوازی JSON",
@@ -696,6 +779,8 @@ function buildQuizFromJson(text) {
 
   quiz = normalized;
   questions = quiz.questions;
+  langMode = quiz.langMode;
+  applyLangMode(resolveLangMode());
   prepareCategories();
 
   $("builder-view").classList.add("hidden");
@@ -706,7 +791,7 @@ function buildQuizFromJson(text) {
 
   if (isBilingual()) addQuizToolbar();
   else removeQuizToolbar();
-  currentLang = isBilingual() ? "ku" : "en";
+  currentLang = quiz.lang === "en" ? "en" : "ku";
   setQuizLanguage(currentLang);
 
   $("quiz-title").textContent = pick(quiz.title) || UI.quizFallbackTitle;
@@ -735,6 +820,7 @@ function escapeScriptJson(value) {
 function buildStandaloneHtml() {
   const data = {
     bilingual: isBilingual(),
+    lang: quiz.lang || (isBilingual() ? "both" : "en"),
     withHome: $("home-toggle").checked,
     title: quiz.title,
     subtitle: quiz.subtitle,
@@ -841,7 +927,7 @@ const UI = {
     mustSelect: "تکایە سەرەتا یەکێک لە بژاردەکان هەڵبژێرە!", score: (s, t) => \`\${td(s)} لە \${td(t)} (\${Math.round((s / t) * 100)}%)\`,
     categoryScore: (cat, s, t) => \`\${cat}: \${td(s)} لە \${td(t)}\`, langLabel: "🌐 کوردی", homeLabel: "🏠 ماڵەوە" }
 };
-let currentLang = DATA.bilingual ? "ku" : "en";
+let currentLang = DATA.lang === "en" ? "en" : "ku";
 const $ = id => document.getElementById(id);
 function safeText(v){ return v == null ? "" : String(v).trim(); }
 function td(v){ const s=String(v); if(currentLang!=="ku") return s; return s.replace(/[0-9]/g,d=>"٠١٢٣٤٥٦٧٨٩"[Number(d)]); }
