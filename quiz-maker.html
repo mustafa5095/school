@@ -10,14 +10,13 @@
   "both" or "auto") chooses the language(s): "both" (and "auto" when the JSON
   carries both Kurdish and English text) makes the generated quiz show a
   language switch; "en" or "ku" fixes it to that single language. Without the
-  key it falls back to auto. RTL/LTR is chosen to match the language in use.
+  key it falls back to auto. Direction is auto-detected from the text itself
+  and applied to every text field (Kurdish/Arabic letters render RTL, otherwise
+  LTR), so no direction flag is required.
 
   Optional meta.after_test / meta.after_test_en text is shown on the results
   screen after the quiz is finished. Optional meta.author / meta.author_en
   adds an author line ("Quiz Author - <name>"), hidden when empty.
-
-  Direction is auto-detected from the text on screen: Kurdish text renders
-  RTL and English/Latin text LTR, so no direction flag is required.
 
   This page is intentionally not listed in files.json (so it stays off the
   dashboard). It is linked from README.md instead.
@@ -56,7 +55,7 @@ textarea{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
     </header>
 
     <div class="mb-4 bg-slate-700/50 p-4 rounded-xl border border-slate-600 text-slate-300 text-xs sm:text-sm leading-relaxed">
-      Format: title, subtitle and a list of questions. Set <code class="text-emerald-300">meta.language</code> to <code class="text-emerald-300">en</code>, <code class="text-emerald-300">ku</code> or <code class="text-emerald-300">both</code> to force a single language or show a Kurdish/English switch; leave it out (or set <code class="text-emerald-300">auto</code>) and the quiz uses whichever languages the content provides. Text may be Kurdish, English, or both: fill the base key for Kurdish and the <code class="text-emerald-300">_en</code> key for English. Add <code class="text-emerald-300">meta.after_test</code> / <code class="text-emerald-300">meta.after_test_en</code> for a message shown on the results screen after the quiz is finished, and <code class="text-emerald-300">meta.author</code> / <code class="text-emerald-300">meta.author_en</code> for an optional author line shown as <em>Quiz Author - &lt;name&gt;</em>. Kurdish text is rendered right-to-left and English left-to-right automatically.
+      Format: title, subtitle and a list of questions. Set <code class="text-emerald-300">meta.language</code> to <code class="text-emerald-300">en</code>, <code class="text-emerald-300">ku</code> or <code class="text-emerald-300">both</code> to force a single language or show a Kurdish/English switch; leave it out (or set <code class="text-emerald-300">auto</code>) and the quiz uses whichever languages the content provides. Text may be Kurdish, English, or both: fill the base key for Kurdish and the <code class="text-emerald-300">_en</code> key for English. Add <code class="text-emerald-300">meta.after_test</code> / <code class="text-emerald-300">meta.after_test_en</code> for a message shown on the results screen after the quiz is finished, and <code class="text-emerald-300">meta.author</code> / <code class="text-emerald-300">meta.author_en</code> for an optional author line shown as <em>Quiz Author - &lt;name&gt;</em>. Kurdish text is rendered right-to-left and English left-to-right automatically, per field.
     </div>
 
     <textarea id="json-input" spellcheck="false" rows="16"
@@ -246,31 +245,29 @@ const RTL_RE = /[\u0590-\u05FF\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB1D-\uFD
 function detectDir(text) {
   return RTL_RE.test(safeText(text)) ? "rtl" : "ltr";
 }
-/* A language locks the direction only when it is known to be RTL (ku). For
-   English we still detect per-text, so a Latin letter or number in Kurdish
-   text does not flip the whole quiz to LTR. */
-function directionFor(text, lang) {
-  if (lang === "ku") return "rtl";
-  return detectDir(text);
-}
-function setDir(el, dir) {
-  if (el) el.dir = dir;
+
+/* Auto direction is the standard for every text field: walk the quiz view and
+   set each element's direction from the text it directly contains, so any new
+   element is covered without extra wiring. Kurdish mode locks everything RTL. */
+function applyAutoDirection() {
+  const root = $("quiz-view");
+  if (!root) return;
+  const locked = currentLang === "ku" ? "rtl" : null;
+  root.querySelectorAll("*").forEach((el) => {
+    let text = "";
+    for (const node of el.childNodes) if (node.nodeType === 3) text += node.nodeValue;
+    if (!safeText(text)) return;
+    el.dir = locked || detectDir(text);
+  });
 }
 function applyDirection() {
-  if (currentLang === "ku") { $("start-list").dir = "rtl"; $("start-list").style.textAlign = "right"; return; }
-  if (!startScreen.classList.contains("hidden")) {
-    const countText = $("start-count").textContent;
-    const firstBullet = $("start-list").firstChild ? $("start-list").firstChild.textContent : "";
-    const dir = detectDir(countText + " " + firstBullet);
-    setDir($("start-count"), dir);
-    const list = $("start-list");
+  applyAutoDirection();
+  const list = $("start-list");
+  if (list) {
+    const first = list.firstElementChild;
+    const dir = currentLang === "ku" ? "rtl" : (first && first.dir ? first.dir : "ltr");
     list.dir = dir;
     list.style.textAlign = dir === "rtl" ? "right" : "left";
-  } else if (!quizScreen.classList.contains("hidden")) {
-    setDir($("question-text"), detectDir($("question-text").textContent + " " + $("category-badge").textContent));
-  } else if (!resultsScreen.classList.contains("hidden")) {
-    setDir($("author-line"), detectDir($("author-line").textContent));
-    setDir($("after-test"), detectDir($("after-test").textContent));
   }
 }
 
@@ -280,7 +277,6 @@ function renderAuthorLine() {
   const el = $("author-line");
   const name = quiz ? pick(quiz.author) : "";
   el.textContent = name ? t().authorLabel + " - " + name : "";
-  el.dir = directionFor(t().authorLabel + " " + name, currentLang);
 }
 
 /* Base and "_en" values joined into per-language strings after a language mode
@@ -593,7 +589,6 @@ function renderAfterTest() {
   box.replaceChildren();
   box.classList.toggle("hidden", !text);
   if (!text) return;
-  box.dir = currentLang === "ku" ? "rtl" : detectDir(text);
   for (const line of text.split("\n")) {
     if (!safeText(line)) continue;
     const p = document.createElement("p");
@@ -965,7 +960,7 @@ button:focus-visible{outline:2px solid #34d399;outline-offset:3px}
 </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col items-center justify-center p-4">
-<div class="max-w-3xl w-full bg-slate-800 rounded-2xl shadow-2xl p-6 sm:p-8 border border-slate-700">
+<div id="quiz-view" class="max-w-3xl w-full bg-slate-800 rounded-2xl shadow-2xl p-6 sm:p-8 border border-slate-700">
 ${topbar}
 <header class="text-center mb-8">
 <h1 id="quiz-title" class="text-2xl sm:text-3xl font-bold text-emerald-400 mb-2"></h1>
@@ -1040,30 +1035,15 @@ function pick(p){ if(!p||typeof p!=="object") return safeText(p); return safeTex
 function t(){ return UI[currentLang]; }
 const RTL_RE=/[\u0590-\u05FF\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFF]/;
 function detectDir(text){ return RTL_RE.test(safeText(text))?"rtl":"ltr"; }
-function directionFor(text){ return currentLang==="ku"?"rtl":detectDir(text); }
 function applyDirection(){
-  if(currentLang==="ku"){ $("start-list").dir="rtl"; $("start-list").style.textAlign="right"; return; }
-  if(!$("start-screen").classList.contains("hidden")){
-    const fb=$("start-list").firstChild?$("start-list").firstChild.textContent:"";
-    const d=detectDir($("start-count").textContent+" "+fb);
-    $("start-count").dir=d; $("start-list").dir=d; $("start-list").style.textAlign=d==="rtl"?"right":"left";
-  } else if(!$("quiz-screen").classList.contains("hidden")){
-    $("question-text").dir=detectDir($("question-text").textContent+" "+$("category-badge").textContent);
-  } else if(!$("results-screen").classList.contains("hidden")){
-    $("after-test").dir=detectDir($("after-test").textContent);
-  }
+  const root=$("quiz-view"); if(!root) return;
+  const locked=currentLang==="ku"?"rtl":null;
+  root.querySelectorAll("*").forEach(el=>{ let text=""; for(const n of el.childNodes) if(n.nodeType===3) text+=n.nodeValue; if(!safeText(text)) return; el.dir=locked||detectDir(text); });
+  const list=$("start-list"); if(list){ const first=list.firstElementChild; const d=currentLang==="ku"?"rtl":(first&&first.dir?first.dir:"ltr"); list.dir=d; list.style.textAlign=d==="rtl"?"right":"left"; }
 }
-function activeDir(){
-  if(currentLang==="ku") return "rtl";
-  if(!$("start-screen").classList.contains("hidden")){
-    const fb=$("start-list").firstChild?$("start-list").firstChild.textContent:"";
-    return detectDir($("start-count").textContent+" "+fb);
-  }
-  if(!$("quiz-screen").classList.contains("hidden")) return detectDir($("question-text").textContent+" "+$("category-badge").textContent);
-  return detectDir($("after-test").textContent);
-}
-function updateDir(){ const d=activeDir(); document.documentElement.dir=d; document.documentElement.lang=d==="rtl"?"ku":"en"; }
-function renderAuthor(){ const el=$("author-line"); const name=pick(DATA.author); el.textContent=name?t().authorLabel+" - "+name:""; el.dir=directionFor(t().authorLabel+" "+name); }
+function activeText(){ if(!$("start-screen").classList.contains("hidden")){ const fb=$("start-list").firstChild?$("start-list").firstChild.textContent:""; return $("start-count").textContent+" "+fb; } if(!$("quiz-screen").classList.contains("hidden")) return $("question-text").textContent+" "+$("category-badge").textContent; return $("after-test").textContent; }
+function updateDir(){ const d=currentLang==="ku" ? "rtl" : detectDir(activeText()); document.documentElement.dir=d; document.documentElement.lang=d==="rtl"?"ku":"en"; }
+function renderAuthor(){ const el=$("author-line"); const name=pick(DATA.author); el.textContent=name?t().authorLabel+" - "+name:""; }
 function shuffle(a){ const r=[...a]; for(let i=r.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [r[i],r[j]]=[r[j],r[i]]; } return r; }
 const COLORS=[{bg:"bg-sky-900/60",text:"text-sky-300",border:"border-sky-700"},{bg:"bg-emerald-900/60",text:"text-emerald-300",border:"border-emerald-700"},{bg:"bg-amber-900/60",text:"text-amber-300",border:"border-amber-700"},{bg:"bg-violet-900/60",text:"text-violet-300",border:"border-violet-700"},{bg:"bg-rose-900/60",text:"text-rose-300",border:"border-rose-700"},{bg:"bg-cyan-900/60",text:"text-cyan-300",border:"border-cyan-700"}];
 const questions = DATA.questions;
@@ -1075,7 +1055,7 @@ function createQuiz(){ const out=[]; for(const c of categoryOrder){ for(const q 
 function optionAt(q,i){ return currentLang==="en" ? (q.optionsEn[i]||q.optionsKu[i]||"") : (q.optionsKu[i]||q.optionsEn[i]||""); }
 function setLang(lang){ currentLang=lang; const b=$("lang-btn"); if(b) b.textContent = lang==="en" ? "🌐 کوردی" : "🌐 English"; const hl=$("home-link"); if(hl) hl.textContent=t().homeLabel; $("quiz-title").textContent=pick(DATA.title)||"Quiz"; const sub=pick(DATA.subtitle); $("quiz-subtitle").textContent=sub; $("quiz-subtitle").className=sub?"text-slate-400 text-sm sm:text-base":"hidden"; $("results-title").textContent=t().resultsTitle; $("review-heading").textContent=t().reviewHeading; $("restart-btn").textContent=t().restart; renderAuthor(); if(!$("start-screen").classList.contains("hidden")) renderStart(); if(!$("quiz-screen").classList.contains("hidden")) loadQuestion(); if(!$("results-screen").classList.contains("hidden")) showResults(); updateDir(); applyDirection(); }
 function renderStart(){ $("start-count").textContent=t().startCount(questions.length); const list=$("start-list"); list.replaceChildren(); for(const key of categoryOrder){ const n=questions.filter(q=>catKey(q)===key).length; const li=document.createElement("li"); li.textContent=t().startCategory(n,catLabel(key)); list.appendChild(li); } for(const line of DATA.intro){ const text=pick(line); if(!text) continue; const li=document.createElement("li"); li.textContent="• "+text; list.appendChild(li); } $("start-btn").textContent=t().startBtn; }
-function renderAfterTest(){ const box=$("after-test"); const text=pick(DATA.afterTest); box.replaceChildren(); box.classList.toggle("hidden",!text); if(!text) return; box.dir=directionFor(text); for(const line of text.split("\\n")){ if(!safeText(line)) continue; const p=document.createElement("p"); p.textContent=line; box.appendChild(p); } }
+function renderAfterTest(){ const box=$("after-test"); const text=pick(DATA.afterTest); box.replaceChildren(); box.classList.toggle("hidden",!text); if(!text) return; for(const line of text.split("\\n")){ if(!safeText(line)) continue; const p=document.createElement("p"); p.textContent=line; box.appendChild(p); } }
 function loadQuestion(){ const q=quizQuestions[currentQuestionIndex]; $("question-counter").textContent=t().counter(currentQuestionIndex+1,quizQuestions.length); $("progress-bar").style.width=(((currentQuestionIndex+1)/quizQuestions.length)*100)+"%"; const color=categoryColor.get(q.categoryKey)||COLORS[1]; const badge=$("category-badge"); badge.textContent=pick(q.category); badge.className=color.bg+" "+color.text+" px-3 py-1 rounded-full text-xs border "+color.border; $("question-text").textContent=td(currentQuestionIndex+1)+". "+pick(q.question); const c=$("options-container"); c.replaceChildren(); q.optionsKu.forEach((_,i)=>{ const b=document.createElement("button"); const sel=userAnswers[currentQuestionIndex]===i; b.type="button"; b.className="w-full p-4 rounded-xl border transition duration-200 font-medium text-start "+(sel?"bg-emerald-700 border-emerald-400 text-white":"bg-slate-700/60 hover:bg-slate-700 border-slate-600 text-slate-200"); b.textContent=String.fromCharCode(65+i)+") "+optionAt(q,i); b.addEventListener("click",()=>selectOption(i)); c.appendChild(b); }); const p=$("prev-btn"), n=$("next-btn"); p.textContent=t().prev; n.textContent=currentQuestionIndex===quizQuestions.length-1?t().finish:t().next; p.classList.toggle("hidden",currentQuestionIndex===0); n.classList.toggle("hidden",userAnswers[currentQuestionIndex]===null); updateDir(); applyDirection(); }
 function selectOption(i){ userAnswers[currentQuestionIndex]=i; loadQuestion(); }
 function nextQuestion(){ if(userAnswers[currentQuestionIndex]===null){ alert(t().mustSelect); return; } if(currentQuestionIndex<quizQuestions.length-1){ currentQuestionIndex++; loadQuestion(); } else showResults(); }
@@ -1094,7 +1074,7 @@ $("results-title").textContent=t().resultsTitle; $("review-heading").textContent
 document.title=pick(DATA.title)||"Quiz";
 if(DATA.bilingual){ $("lang-btn").hidden=false; } else { const b=$("lang-btn"); if(b) b.remove(); }
 prepare();
-setLang(currentLang); renderStart();
+renderStart(); setLang(currentLang);
 <\/script>
 </body>
 </html>`;

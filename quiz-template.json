@@ -10,7 +10,7 @@
     "6. questions: array. Each item has category/category_en, question/question_en, options/options_en, correct (0-based index), explanation/explanation_en.",
     "7. options and options_en must be the same length and same order; 'correct' points into that order.",
     "8. Base keys are Kurdish; the '_en' keys are English. You may fill only one language; the other falls back automatically. With meta.language \"both\" (or \"auto\" when both languages are present) the quiz shows a Kurdish/English switch.",
-    "9. Direction is auto-detected from the text on screen: Kurdish text renders RTL and English/Latin text LTR, so no direction flag is needed.",
+    "9. Direction is auto-detected from the text itself, per field: Kurdish/Arabic text renders RTL and English/Latin text LTR, so no direction flag is needed.",
     "10. Remove this '_instructions' key when you are done (optional but cleaner)."
   ],
   "meta": {
