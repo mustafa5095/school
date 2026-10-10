@@ -6,9 +6,10 @@
 
   How to use (for AI agents and humans):
     1. Copy this file to a new name, e.g. `notes-unit2.html` or `quiz-week3.html`.
-    2. Keep the <head>, body classes, card shell, palette and footer exactly as
-       they are — that is the shared style.
-    3. Replace the content inside the card with whatever the page needs.
+    2. Keep the <head>, body classes, card shell, top bar, palette and footer
+       exactly as they are — that is the shared style.
+    3. Replace the content inside the card with whatever the page needs. If the
+       page is Kurdish-only, you may drop the language switch (see below).
     4. Register the page so the dashboard shows it: add the filename to
        `files.json` and add a `["<filename>"]` section to `description.toml`
        with title/title_en, description/description_en and category/category_en.
@@ -18,7 +19,10 @@
     - Page shell: `bg-slate-900 text-slate-100`, content in a
       `max-w-3xl w-full bg-slate-800 rounded-2xl shadow-2xl border border-slate-700`.
     - Accent color is emerald (buttons, headings, highlights).
-    - Body font is Vazirmatn; layout is RTL, `lang="ku" dir="rtl"`.
+    - Body font is Vazirmatn; default layout is RTL, `lang="ku" dir="rtl"`.
+    - The language switch flips `dir` and `lang` and shows/hides `[data-lang]`
+      blocks. Kurdish is `ku` (RTL), English is `en` (LTR).
+    - The Home button links back to `index.html`.
     - Build interactive UI with plain DOM APIs (`document.createElement`),
       never `innerHTML`.
     - Always keep the author credit footer at the bottom.
@@ -32,12 +36,12 @@
     neutral btn  bg-slate-700 hover:bg-slate-600
     badge        bg-emerald-900/60 text-emerald-300 border-emerald-700
 -->
-<html lang="ku" dir="rtl">
+<html lang="ku" dir="rtl" id="html-root">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- TODO: page title (also used by the browser tab) -->
-<title>ناونیشانی پەڕە</title>
+<meta name="theme-color" content="#0f172a">
+<title id="page-title">ناونیشانی پەڕە</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
@@ -48,45 +52,77 @@ button:focus-visible{outline:2px solid #34d399;outline-offset:3px}
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col items-center justify-center p-4">
 <div class="max-w-3xl w-full bg-slate-800 rounded-2xl shadow-2xl p-6 sm:p-8 border border-slate-700">
 
+  <!-- ================= Top bar: Home + language switch =================
+       Both controls are optional; keep them so every page can get back to the
+       dashboard and switch language the same way the dashboard does. -->
+  <div class="flex justify-between items-center mb-6 gap-3">
+    <a href="index.html"
+       class="bg-slate-700 hover:bg-slate-600 text-white font-semibold py-2 px-5 rounded-xl text-sm transition">
+      🏠 <span data-lang="ku">ماڵەوە</span><span data-lang="en" hidden>Home</span>
+    </a>
+    <button type="button" id="lang-btn"
+      class="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 font-semibold px-4 py-2 rounded-xl text-sm transition">
+      🌐 <span id="lang-label">English</span>
+    </button>
+  </div>
+
   <!-- ================= Header ================= -->
   <header class="text-center mb-8">
     <!-- TODO: main heading -->
-    <h1 class="text-2xl sm:text-3xl font-bold text-emerald-400 mb-2">ناونیشانی سەرەکی</h1>
+    <h1 class="text-2xl sm:text-3xl font-bold text-emerald-400 mb-2">
+      <span data-lang="ku">ناونیشانی سەرەکی</span>
+      <span data-lang="en" hidden>Main Heading</span>
+    </h1>
     <!-- TODO: one-line subtitle / description -->
-    <p class="text-slate-400 text-sm sm:text-base">کورتەیەک دەربارەی ئەم پەڕەیە</p>
+    <p class="text-slate-400 text-sm sm:text-base">
+      <span data-lang="ku">کورتەیەک دەربارەی ئەم پەڕەیە</span>
+      <span data-lang="en" hidden>A short line about this page</span>
+    </p>
   </header>
 
   <!-- ================= Highlight / note panel =================
        A soft callout. Use for intros, warnings, summaries, key facts. -->
   <section class="mb-6 bg-slate-700/50 p-6 rounded-xl border border-slate-600">
-    <p class="text-lg font-medium mb-2">سەرنج:</p>
-    <p class="text-slate-300 text-sm leading-relaxed">ئەمە پانێلێکی کورتەیە بۆ دەق یان ڕوونکردنەوە.</p>
+    <p class="text-lg font-medium mb-2">
+      <span data-lang="ku">سەرنج:</span><span data-lang="en" hidden>Note:</span>
+    </p>
+    <p class="text-slate-300 text-sm leading-relaxed">
+      <span data-lang="ku">ئەمە پانێلێکی کورتەیە بۆ دەق یان ڕوونکردنەوە.</span>
+      <span data-lang="en" hidden>This is a short panel for text or explanation.</span>
+    </p>
   </section>
 
   <!-- ================= Section heading with badge ================= -->
   <div class="flex justify-between items-center mb-4 gap-3">
-    <h2 class="text-lg sm:text-xl font-semibold text-slate-100">ناونیشانی بەش</h2>
+    <h2 class="text-lg sm:text-xl font-semibold text-slate-100">
+      <span data-lang="ku">ناونیشانی بەش</span>
+      <span data-lang="en" hidden>Section Heading</span>
+    </h2>
     <span class="bg-emerald-900/60 text-emerald-300 px-3 py-1 rounded-full text-xs border border-emerald-700">
       <!-- TODO: short badge label -->
-      پۆل
+      <span data-lang="ku">پۆل</span><span data-lang="en" hidden>Category</span>
     </span>
   </div>
 
   <!-- ================= Content list =================
        A plain list of items. Swap for <p>, <table>, cards, etc. as needed. -->
-  <ul class="space-y-3 mb-6 text-slate-200">
-    <li class="bg-slate-700/60 rounded-xl border border-slate-600 p-4">خاڵی یەکەم</li>
-    <li class="bg-slate-700/60 rounded-xl border border-slate-600 p-4">خاڵی دووەم</li>
+  <ul class="space-y-3 mb-6 text-slate-200" dir="auto">
+    <li class="bg-slate-700/60 rounded-xl border border-slate-600 p-4">
+      <span data-lang="ku">خاڵی یەکەم</span><span data-lang="en" hidden>First point</span>
+    </li>
+    <li class="bg-slate-700/60 rounded-xl border border-slate-600 p-4">
+      <span data-lang="ku">خاڵی دووەم</span><span data-lang="en" hidden>Second point</span>
+    </li>
   </ul>
 
   <!-- ================= Buttons =================
        Accent = main action, neutral = secondary. -->
   <div class="flex flex-wrap gap-3 justify-center mt-6 pt-4 border-t border-slate-700">
     <button type="button" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2 px-6 rounded-xl shadow-lg transition">
-      کرداری سەرەکی
+      <span data-lang="ku">کرداری سەرەکی</span><span data-lang="en" hidden>Primary action</span>
     </button>
     <button type="button" class="bg-slate-700 hover:bg-slate-600 text-white font-semibold py-2 px-5 rounded-xl">
-      کرداری لاوەکی
+      <span data-lang="ku">کرداری لاوەکی</span><span data-lang="en" hidden>Secondary action</span>
     </button>
   </div>
 
@@ -97,12 +133,35 @@ button:focus-visible{outline:2px solid #34d399;outline-offset:3px}
 </div>
 
 <!-- ================= Script (only if the page needs behavior) =================
-     Optional. Most pages can delete this block. When you keep it, build UI with
-     DOM APIs, not innerHTML. -->
+     Includes the language switch. Delete the whole block only if the page is
+     static and Kurdish-only. -->
 <script>
 "use strict";
 
 const $ = id => document.getElementById(id);
+
+// --- Language switch -------------------------------------------------------
+let currentLang = "ku";
+try {
+  const saved = localStorage.getItem("dashboard_lang");
+  if (saved === "ku" || saved === "en") currentLang = saved;
+} catch { /* default to Kurdish */ }
+
+function applyLanguage() {
+  const root = $("html-root");
+  root.lang = currentLang;
+  root.dir = currentLang === "ku" ? "rtl" : "ltr";
+  document.querySelectorAll("[data-lang]").forEach(el => {
+    el.hidden = el.getAttribute("data-lang") !== currentLang;
+  });
+  $("lang-label").textContent = currentLang === "ku" ? "English" : "کوردی";
+  try { localStorage.setItem("dashboard_lang", currentLang); } catch { /* ignore */ }
+}
+
+$("lang-btn").addEventListener("click", () => {
+  currentLang = currentLang === "ku" ? "en" : "ku";
+  applyLanguage();
+});
 
 /* Convert Western digits in a value to Kurdish digits for display. */
 function toKurdishDigits(value) {
@@ -110,7 +169,8 @@ function toKurdishDigits(value) {
   return String(value).replace(/[0-9]/g, digit => digits[Number(digit)]);
 }
 
-/* TODO: wire up behavior here, or remove this script block entirely. */
+/* TODO: wire up page behavior here, then finish with: */
+applyLanguage();
 </script>
 </body>
 </html>
