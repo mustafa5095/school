@@ -15,10 +15,11 @@ repository.
 
 ## New pages
 
-`template.html` is a full starter page in the repository's style (Tailwind CDN,
-Vazirmatn font, slate/emerald palette, RTL, DOM-built UI, Kurdish digits). Copy
-it to create a new page, then register that page in `files.json` and
-`description.toml`. Do not list `template.html` itself as a page.
+`template.html` is the site's style/layout template (Tailwind CDN, Vazirmatn
+font, slate/emerald palette, RTL, DOM-built UI, Kurdish digits) — not a
+quiz-specific template. Copy it to start any new page, then register that page
+in `files.json` and `description.toml`. Do not list `template.html` itself as a
+page.
 
 Every page must include the author credit footer
 (`دروستکەر: مصطفی زەردەشت` / `Created by Mustafa Zardasht`).

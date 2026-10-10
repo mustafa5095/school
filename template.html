@@ -1,25 +1,36 @@
 <!DOCTYPE html>
 <!--
-  TEMPLATE — copy this file to start a new page in the same style.
+  STYLE TEMPLATE — the look and feel of this site.
+  Copy this file to start any new page (quiz, article, notes, list, anything).
+  It is a styling/layout reference, not a quiz.
 
   How to use (for AI agents and humans):
-    1. Copy this file to a new name, e.g. `quiz-week3.html` or `notes-unit2.html`.
-    2. Replace the placeholders marked with `TODO` (title, headings, content, script data).
-    3. Register the page so the dashboard shows it:
-         - add the filename to `files.json`
-         - add a `["<filename>"]` section to `description.toml` with
-           `title`, `description`, `title_en`, `description_en`, and
-           `category` (Kurdish) / `category_en` (English).
+    1. Copy this file to a new name, e.g. `notes-unit2.html` or `quiz-week3.html`.
+    2. Keep the <head>, body classes, card shell, palette and footer exactly as
+       they are — that is the shared style.
+    3. Replace the content inside the card with whatever the page needs.
+    4. Register the page so the dashboard shows it: add the filename to
+       `files.json` and add a `["<filename>"]` section to `description.toml`
+       with title/title_en, description/description_en and category/category_en.
 
   Style rules (keep new pages consistent):
     - Tailwind via CDN, no build step.
     - Page shell: `bg-slate-900 text-slate-100`, content in a
       `max-w-3xl w-full bg-slate-800 rounded-2xl shadow-2xl border border-slate-700`.
     - Accent color is emerald (buttons, headings, highlights).
-    - Body font is Vazirmatn, layout is RTL for Kurdish.
-    - Interactive UI is built with plain DOM APIs (`document.createElement`),
-      never `innerHTML`, and every control is a real <button>.
-    - Numbers shown in the UI use Kurdish digits via `toKurdishDigits()`.
+    - Body font is Vazirmatn; layout is RTL, `lang="ku" dir="rtl"`.
+    - Build interactive UI with plain DOM APIs (`document.createElement`),
+      never `innerHTML`.
+    - Always keep the author credit footer at the bottom.
+
+  Palette (Tailwind classes used across the site):
+    background   bg-slate-900          card        bg-slate-800
+    panel        bg-slate-700/50       border      border-slate-700 / 600
+    heading      text-emerald-400      body text   text-slate-100
+    muted text   text-slate-400        faint text  text-slate-500
+    accent btn   bg-emerald-600 hover:bg-emerald-500
+    neutral btn  bg-slate-700 hover:bg-slate-600
+    badge        bg-emerald-900/60 text-emerald-300 border-emerald-700
 -->
 <html lang="ku" dir="rtl">
 <head>
@@ -45,85 +56,53 @@ button:focus-visible{outline:2px solid #34d399;outline-offset:3px}
     <p class="text-slate-400 text-sm sm:text-base">کورتەیەک دەربارەی ئەم پەڕەیە</p>
   </header>
 
-  <!-- ================= Intro / note box ================= -->
-  <section class="mb-6 bg-slate-700/50 p-6 rounded-xl border border-slate-600 inline-block w-full">
-    <p class="text-lg font-medium mb-2">بەشێکی کورت:</p>
-    <!-- TODO: bullet list of what this page contains -->
-    <ul class="text-slate-300 text-sm space-y-1 text-right inline-block">
-      <li>• خاڵی یەکەم</li>
-      <li>• خاڵی دووەم</li>
-    </ul>
+  <!-- ================= Highlight / note panel =================
+       A soft callout. Use for intros, warnings, summaries, key facts. -->
+  <section class="mb-6 bg-slate-700/50 p-6 rounded-xl border border-slate-600">
+    <p class="text-lg font-medium mb-2">سەرنج:</p>
+    <p class="text-slate-300 text-sm leading-relaxed">ئەمە پانێلێکی کورتەیە بۆ دەق یان ڕوونکردنەوە.</p>
   </section>
 
-  <!-- ================= Primary action ================= -->
-  <div class="text-center mb-8">
-    <button type="button" id="primary-btn"
-      class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition text-lg">
-      دەستپێکردن
+  <!-- ================= Section heading with badge ================= -->
+  <div class="flex justify-between items-center mb-4 gap-3">
+    <h2 class="text-lg sm:text-xl font-semibold text-slate-100">ناونیشانی بەش</h2>
+    <span class="bg-emerald-900/60 text-emerald-300 px-3 py-1 rounded-full text-xs border border-emerald-700">
+      <!-- TODO: short badge label -->
+      پۆل
+    </span>
+  </div>
+
+  <!-- ================= Content list =================
+       A plain list of items. Swap for <p>, <table>, cards, etc. as needed. -->
+  <ul class="space-y-3 mb-6 text-slate-200">
+    <li class="bg-slate-700/60 rounded-xl border border-slate-600 p-4">خاڵی یەکەم</li>
+    <li class="bg-slate-700/60 rounded-xl border border-slate-600 p-4">خاڵی دووەم</li>
+  </ul>
+
+  <!-- ================= Buttons =================
+       Accent = main action, neutral = secondary. -->
+  <div class="flex flex-wrap gap-3 justify-center mt-6 pt-4 border-t border-slate-700">
+    <button type="button" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2 px-6 rounded-xl shadow-lg transition">
+      کرداری سەرەکی
+    </button>
+    <button type="button" class="bg-slate-700 hover:bg-slate-600 text-white font-semibold py-2 px-5 rounded-xl">
+      کرداری لاوەکی
     </button>
   </div>
 
-  <!-- ================= Content card ================= -->
-  <section id="content" class="hidden">
-    <div class="flex justify-between items-center mb-4 gap-3">
-      <h2 class="text-lg sm:text-xl font-semibold text-slate-100">ناونیشانی بەش</h2>
-      <span class="bg-emerald-900/60 text-emerald-300 px-3 py-1 rounded-full text-xs border border-emerald-700">
-        <!-- TODO: short badge label -->
-        پۆل
-      </span>
-    </div>
-
-    <!-- Example of a selectable option list (like a quiz) -->
-    <div id="options-container" class="space-y-3 mb-6">
-      <!-- Options are generated in the script below -->
-    </div>
-
-    <div class="flex justify-between items-center gap-3 mt-6 pt-4 border-t border-slate-700">
-      <button type="button" id="secondary-btn"
-        class="bg-slate-700 hover:bg-slate-600 text-white font-semibold py-2 px-5 rounded-xl">
-        دووەمە
-      </button>
-    </div>
-  </section>
-
-  <!-- ================= Result / summary ================= -->
-  <section id="result" class="hidden mt-6 pt-6 border-t border-slate-700 text-center">
-    <h2 class="text-2xl font-bold text-emerald-400 mb-3">ئەنجام</h2>
-    <p id="result-text" class="text-slate-300 mb-5"></p>
-    <button type="button" id="restart-btn"
-      class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2 px-6 rounded-xl text-sm">
-      دووبارە
-    </button>
-  </section>
-
-  <!-- ================= Footer ================= -->
+  <!-- ================= Footer (author credit — keep on every page) ================= -->
   <footer class="mt-8 pt-4 border-t border-slate-700/60 text-center text-xs text-slate-500">
-    <!-- Keep this credit on every page. -->
     دروستکەر: مصطفی زەردەشت
   </footer>
 </div>
 
+<!-- ================= Script (only if the page needs behavior) =================
+     Optional. Most pages can delete this block. When you keep it, build UI with
+     DOM APIs, not innerHTML. -->
 <script>
 "use strict";
 
-/* ============================================================
- * Placeholder data — TODO: replace with the real content.
- * Keep the same shape so the rendering code below still works.
- * ============================================================ */
-const items = [
-  { text: "بژاردەی یەکەم", correct: true },
-  { text: "بژاردەی دووەم", correct: false },
-  { text: "بژاردەی سێیەم", correct: false }
-];
-
 const $ = id => document.getElementById(id);
-const primaryBtn = $("primary-btn");
-const secondaryBtn = $("secondary-btn");
-const restartBtn = $("restart-btn");
-const content = $("content");
-const result = $("result");
-const optionsContainer = $("options-container");
-const resultText = $("result-text");
 
 /* Convert Western digits in a value to Kurdish digits for display. */
 function toKurdishDigits(value) {
@@ -131,48 +110,7 @@ function toKurdishDigits(value) {
   return String(value).replace(/[0-9]/g, digit => digits[Number(digit)]);
 }
 
-/* Fisher-Yates shuffle. Returns a new array and does not mutate the source. */
-function shuffleArray(array) {
-  const copy = [...array];
-  for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
-  }
-  return copy;
-}
-
-/* Render the options as accessible buttons (no innerHTML). */
-function renderOptions(options) {
-  optionsContainer.replaceChildren();
-  options.forEach((option, index) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "w-full text-right p-4 rounded-xl border transition duration-200 font-medium "
-      + "bg-slate-700/60 hover:bg-slate-700 border-slate-600 text-slate-200";
-    button.textContent = `${String.fromCharCode(65 + index)}) ${option.text}`;
-    button.addEventListener("click", () => {
-      resultText.textContent = option.correct ? "ڕاستە ✓" : "هەڵەیە ✗";
-      result.classList.remove("hidden");
-    });
-    optionsContainer.appendChild(button);
-  });
-}
-
-/* Wire up the page. TODO: adapt this to the real interaction. */
-primaryBtn.addEventListener("click", () => {
-  renderOptions(shuffleArray(items));
-  content.classList.remove("hidden");
-  result.classList.add("hidden");
-});
-
-secondaryBtn.addEventListener("click", () => {
-  content.classList.add("hidden");
-});
-
-restartBtn.addEventListener("click", () => {
-  result.classList.add("hidden");
-  content.classList.remove("hidden");
-});
+/* TODO: wire up behavior here, or remove this script block entirely. */
 </script>
 </body>
 </html>
