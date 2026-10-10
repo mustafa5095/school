@@ -6,12 +6,20 @@
   language switch.
 
   The QUIZ IT IS BUILT FROM supports both languages, exactly like
-  quiz-2nd-arabicreligion.html. The optional meta.language key ("en", "ku",
-  "both" or "auto") chooses the language(s): "both" (and "auto" when the JSON
-  carries both Kurdish and English text) makes the generated quiz show a
-  language switch; "en" or "ku" fixes it to that single language. Without the
-  key it falls back to auto. Direction is auto-detected from the text itself
-  and applied to every text field (Kurdish/Arabic letters render RTL, otherwise
+  quiz-2nd-arabicreligion.html. Two independent language axes:
+
+  - INTERFACE (meta.language: "en", "ku", "both" or "auto"): the chrome, the
+    title/subtitle/intro/author/after-test text and the explanations. "both"
+    (and "auto" when the JSON carries both languages) shows a language switch;
+    "en" or "ku" fixes it. Without the key it falls back to auto.
+  - CONTENT (meta.content_language: "ku", "en" or omitted): the test itself -
+    question, answers and category. "ku"/"en" pins it; omitted means it follows
+    the interface switch.
+
+  So meta.language "both" + meta.content_language "ku" gives an interface that
+  can flip between Kurdish and English while the questions and answers stay in
+  Kurdish (and vice versa). Direction is auto-detected from the text itself and
+  applied to every text field (Kurdish/Arabic letters render RTL, otherwise
   LTR), so no direction flag is required.
 
   Optional meta.after_test / meta.after_test_en text is shown on the results
@@ -55,7 +63,7 @@ textarea{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
     </header>
 
     <div class="mb-4 bg-slate-700/50 p-4 rounded-xl border border-slate-600 text-slate-300 text-xs sm:text-sm leading-relaxed">
-      Format: title, subtitle and a list of questions. Set <code class="text-emerald-300">meta.language</code> to <code class="text-emerald-300">en</code>, <code class="text-emerald-300">ku</code> or <code class="text-emerald-300">both</code> to force a single language or show a Kurdish/English switch; leave it out (or set <code class="text-emerald-300">auto</code>) and the quiz uses whichever languages the content provides. Text may be Kurdish, English, or both: fill the base key for Kurdish and the <code class="text-emerald-300">_en</code> key for English. Add <code class="text-emerald-300">meta.after_test</code> / <code class="text-emerald-300">meta.after_test_en</code> for a message shown on the results screen after the quiz is finished, and <code class="text-emerald-300">meta.author</code> / <code class="text-emerald-300">meta.author_en</code> for an optional author line shown as <em>Quiz Author - &lt;name&gt;</em>. Kurdish text is rendered right-to-left and English left-to-right automatically, per field.
+      Format: title, subtitle and a list of questions. Two language axes. <code class="text-emerald-300">meta.language</code> sets the <strong>interface</strong> (chrome, title/subtitle/intro/author/after-test, explanations): <code class="text-emerald-300">en</code>, <code class="text-emerald-300">ku</code>, <code class="text-emerald-300">both</code> to show a Kurdish/English switch, or leave it out (or <code class="text-emerald-300">auto</code>) to use whichever languages the content provides. <code class="text-emerald-300">meta.content_language</code> sets the <strong>test itself</strong> (question, answers, category): <code class="text-emerald-300">ku</code> or <code class="text-emerald-300">en</code> pins it no matter the interface, and leaving it out makes it follow the interface switch. Text may be Kurdish, English, or both: fill the base key for Kurdish and the <code class="text-emerald-300">_en</code> key for English. Add <code class="text-emerald-300">meta.after_test</code> / <code class="text-emerald-300">meta.after_test_en</code> for a message shown on the results screen after the quiz is finished, and <code class="text-emerald-300">meta.author</code> / <code class="text-emerald-300">meta.author_en</code> for an optional author line shown as <em>Quiz Author - &lt;name&gt;</em>. Kurdish text is rendered right-to-left and English left-to-right automatically, per field.
     </div>
 
     <textarea id="json-input" spellcheck="false" rows="16"
@@ -214,26 +222,37 @@ let currentQuestionIndex = 0;
 let userAnswers = [];
 let categoryOrder = [];
 let categoryColor = new Map();
-let currentLang = "en";       // language of the quiz being played
-let langMode = "auto";        // quiz language meta: "auto" | "en" | "ku" | "both"
+let currentLang = "en";       // interface language currently shown
+let langMode = "auto";        // interface language meta: "auto" | "en" | "ku" | "both"
+let contentMode = "follow";   // content language meta: "follow" | "en" | "ku"
 
 const $ = id => document.getElementById(id);
 
 function safeText(value) { return value == null ? "" : String(value).trim(); }
 
-/* Kurdish digits only when the quiz is playing in Kurdish. */
-function td(value) {
+/* The language the test content (question, answers, category) is shown in.
+   "follow" means it tracks the interface switch; "ku"/"en" pin it. */
+function contentLang() { return contentMode === "follow" ? currentLang : contentMode; }
+
+/* Kurdish digits only for the given language. */
+function tdLang(value, lang) {
   const s = String(value);
-  if (currentLang !== "ku") return s;
+  if (lang !== "ku") return s;
   const digits = ["٠","١","٢","٣","٤","٥","٦","٧","٨","٩"];
   return s.replace(/[0-9]/g, d => digits[Number(d)]);
 }
+function td(value) { return tdLang(value, currentLang); }        // interface numbers
+function tdc(value) { return tdLang(value, contentLang()); }     // content numbers
 
-/* Bilingual pair -> string in the active language, with cross-language fallback. */
-function pick(pair) {
+/* Bilingual pair -> string in a given language, with cross-language fallback. */
+function pickIn(pair, lang) {
   if (!pair || typeof pair !== "object") return safeText(pair);
-  return safeText(pair[currentLang]) || safeText(pair.ku) || safeText(pair.en) || "";
+  return safeText(pair[lang]) || safeText(pair.ku) || safeText(pair.en) || "";
 }
+/* Interface text (title, subtitle, intro, author, after-test, explanation). */
+function pick(pair) { return pickIn(pair, currentLang); }
+/* Content text (question, answers, category). */
+function pickContent(pair) { return pickIn(pair, contentLang()); }
 
 function t() { return QUIZ_UI[currentLang]; }
 
@@ -248,16 +267,17 @@ function detectDir(text) {
 
 /* Auto direction is the standard for every text field: walk the quiz view and
    set each element's direction from the text it directly contains, so any new
-   element is covered without extra wiring. Kurdish mode locks everything RTL. */
+   element is covered without extra wiring. An element marked data-content is
+   locked to the content language, the rest to the interface language. */
 function applyAutoDirection() {
   const root = $("quiz-view");
   if (!root) return;
-  const locked = currentLang === "ku" ? "rtl" : null;
   root.querySelectorAll("*").forEach((el) => {
     let text = "";
     for (const node of el.childNodes) if (node.nodeType === 3) text += node.nodeValue;
     if (!safeText(text)) return;
-    el.dir = locked || detectDir(text);
+    const lang = el.hasAttribute("data-content") ? contentLang() : currentLang;
+    el.dir = lang === "ku" ? "rtl" : detectDir(text);
   });
 }
 function applyDirection() {
@@ -265,7 +285,7 @@ function applyDirection() {
   const list = $("start-list");
   if (list) {
     const first = list.firstElementChild;
-    const dir = currentLang === "ku" ? "rtl" : (first && first.dir ? first.dir : "ltr");
+    const dir = contentLang() === "ku" ? "rtl" : (first && first.dir ? first.dir : "ltr");
     list.dir = dir;
     list.style.textAlign = dir === "rtl" ? "right" : "left";
   }
@@ -281,16 +301,6 @@ function renderAuthorLine() {
 
 /* Base and "_en" values joined into per-language strings after a language mode
    is resolved, so a quiz fixed to one language still falls back per field. */
-function joinLang(baseArr, enArr, lang) {
-  const len = Math.max(baseArr.length, enArr.length);
-  const out = [];
-  for (let i = 0; i < len; i++) {
-    const v = lang === "en" ? (safeText(enArr[i]) || safeText(baseArr[i])) : (safeText(baseArr[i]) || safeText(enArr[i]));
-    if (v) out.push(v);
-  }
-  return out;
-}
-
 function pairHasBoth(pair) { return !!(pair && pair.ku && pair.en); }
 
 function contentHasBothLang() {
@@ -301,7 +311,7 @@ function contentHasBothLang() {
   );
 }
 
-/* Resolve the quiz language meta into a concrete mode. "auto" keeps both
+/* Resolve the interface language meta into a concrete mode. "auto" keeps both
    languages when the input carries them, otherwise the single one present. */
 function resolveLangMode() {
   if (langMode === "both") return "both";
@@ -319,7 +329,8 @@ function singleOf(pair, mode) {
   return singlePair(v, mode);
 }
 
-/* Apply a resolved mode: rebuild the rendered strings and mark bilingualism. */
+/* Apply the resolved interface mode. The content (question, answers, category)
+   keeps both languages so it can be selected independently of the interface. */
 function applyLangMode(mode) {
   if (!quiz) return;
   if (mode === "both") {
@@ -328,25 +339,18 @@ function applyLangMode(mode) {
     quiz.intro = quiz.introBoth;
     quiz.afterTest = quiz.afterTestBoth;
     quiz.author = quiz.authorBoth;
-    for (const q of questions) {
-      q.category = q.categoryBoth; q.question = q.questionBoth;
-      q.explanation = q.explanationBoth;
-      q.optionsKu = [...q.optionsKuBoth]; q.optionsEn = [...q.optionsEnBoth];
-    }
+    for (const q of questions) q.explanation = q.explanationBoth;
   } else {
     quiz.title = singleOf(quiz.titleBoth, mode);
     quiz.subtitle = singleOf(quiz.subtitleBoth, mode);
     quiz.intro = quiz.introBoth.map(p => singleOf(p, mode));
     quiz.afterTest = singleOf(quiz.afterTestBoth, mode);
     quiz.author = singleOf(quiz.authorBoth, mode);
-    for (const q of questions) {
-      q.category = singleOf(q.categoryBoth, mode);
-      q.question = singleOf(q.questionBoth, mode);
-      q.explanation = singleOf(q.explanationBoth, mode);
-      const options = joinLang(q.optionsKuBoth, q.optionsEnBoth, mode);
-      q.optionsKu = options;
-      q.optionsEn = [...options];
-    }
+    for (const q of questions) q.explanation = singleOf(q.explanationBoth, mode);
+  }
+  for (const q of questions) {
+    q.category = q.categoryBoth; q.question = q.questionBoth;
+    q.optionsKu = [...q.optionsKuBoth]; q.optionsEn = [...q.optionsEnBoth];
   }
   quiz.bilingual = (mode === "both");
   quiz.lang = mode;
@@ -430,14 +434,22 @@ function normalizeQuiz(raw) {
     introBoth: introPairs,
     afterTestBoth: pair(meta.after_test, meta.after_test_en),
     authorBoth: pair(meta.author, meta.author_en),
-    langMode: readLangMode(meta)
+    langMode: readLangMode(meta),
+    contentMode: readContentMode(meta)
   };
 }
 
-/* The optional quiz language meta: "en", "ku", "both", or "auto". */
+/* The optional interface language meta: "en", "ku", "both", or "auto". */
 function readLangMode(meta) {
   const value = safeText(meta.language || meta.lang).toLowerCase();
   return (value === "en" || value === "ku" || value === "both") ? value : "auto";
+}
+
+/* The optional content language meta: "ku" or "en" pins the test (question,
+   answers, category); anything else means it follows the interface switch. */
+function readContentMode(meta) {
+  const value = safeText(meta.content_language || meta.content_lang).toLowerCase();
+  return (value === "en" || value === "ku") ? value : "follow";
 }
 
 /* ============================================================
@@ -482,14 +494,14 @@ function createQuiz() {
 }
 
 function optionAt(q, index) {
-  return currentLang === "en"
+  return contentLang() === "en"
     ? (q.optionsEn[index] || q.optionsKu[index] || "")
     : (q.optionsKu[index] || q.optionsEn[index] || "");
 }
 
 function categoryLabel(key) {
   const found = questions.find(q => categoryKey(q) === key);
-  return found ? pick(found.category) : key;
+  return found ? pickContent(found.category) : key;
 }
 
 const startScreen = $("start-screen");
@@ -515,16 +527,19 @@ function loadQuestion() {
   progressBar.style.width = `${progressPercent}%`;
 
   const color = categoryColor.get(q.categoryKey) || CATEGORY_COLORS[1];
-  categoryBadge.textContent = pick(q.category);
+  categoryBadge.textContent = pickContent(q.category);
+  categoryBadge.setAttribute("data-content", "");
   categoryBadge.className = `${color.bg} ${color.text} px-3 py-1 rounded-full text-xs border ${color.border}`;
 
-  questionText.textContent = `${td(currentQuestionIndex + 1)}. ${pick(q.question)}`;
+  questionText.textContent = `${tdc(currentQuestionIndex + 1)}. ${pickContent(q.question)}`;
+  questionText.setAttribute("data-content", "");
 
   optionsContainer.replaceChildren();
 
   q.optionsKu.forEach((_, index) => {
     const button = document.createElement("button");
     const selected = userAnswers[currentQuestionIndex] === index;
+    button.setAttribute("data-content", "");
 
     button.type = "button";
     button.className = "w-full p-4 rounded-xl border transition duration-200 font-medium text-start " +
@@ -637,11 +652,13 @@ function showResults() {
 
     const category = document.createElement("p");
     category.className = "text-xs text-slate-400 mb-2";
-    category.textContent = pick(q.category);
+    category.textContent = pickContent(q.category);
+    category.setAttribute("data-content", "");
 
     const question = document.createElement("h4");
     question.className = "font-semibold text-slate-100 mb-3";
-    question.textContent = `${td(index + 1)}. ${pick(q.question)}`;
+    question.textContent = `${tdc(index + 1)}. ${pickContent(q.question)}`;
+    question.setAttribute("data-content", "");
 
     const yourAnswer = document.createElement("p");
     yourAnswer.className = "text-sm mb-2 text-slate-300";
@@ -654,6 +671,7 @@ function showResults() {
     yourText.textContent = userChoice !== null
       ? `${String.fromCharCode(65 + userChoice)}) ${optionAt(q, userChoice)}`
       : t().noAnswer;
+    yourText.setAttribute("data-content", "");
 
     yourAnswer.append(yourLabel, yourText);
     card.append(topRow, category, question, yourAnswer);
@@ -668,6 +686,7 @@ function showResults() {
       const answer = document.createElement("span");
       answer.className = "text-emerald-400 font-bold";
       answer.textContent = `${String.fromCharCode(65 + q.correct)}) ${optionAt(q, q.correct)}`;
+      answer.setAttribute("data-content", "");
 
       correctAnswer.append(label, answer);
       card.appendChild(correctAnswer);
@@ -714,6 +733,7 @@ function renderStartScreen() {
   for (const key of categoryOrder) {
     const count = questions.filter(q => categoryKey(q) === key).length;
     const li = document.createElement("li");
+    li.setAttribute("data-content", "");
     li.textContent = t().startCategory(count, categoryLabel(key));
     list.appendChild(li);
   }
@@ -735,21 +755,10 @@ function renderStartScreen() {
 let langBtn = null;
 
 function updateDir() {
-  const detected = currentLang === "ku" ? "ku" : (detectDir(sampleActiveText()) === "rtl" ? "ku" : "en");
-  document.documentElement.lang = detected;
-  document.documentElement.dir = detected === "ku" ? "rtl" : "ltr";
-}
-
-/* Sample the text currently on screen so direction can autodetect from it. */
-function sampleActiveText() {
-  if (!startScreen.classList.contains("hidden")) {
-    const firstBullet = $("start-list").firstChild ? $("start-list").firstChild.textContent : "";
-    return $("start-count").textContent + " " + firstBullet;
-  }
-  if (!quizScreen.classList.contains("hidden")) {
-    return $("question-text").textContent + " " + $("category-badge").textContent;
-  }
-  return $("after-test").textContent;
+  // Page chrome follows the interface language; individual fields (content vs
+  // interface) get their own dir via applyAutoDirection.
+  document.documentElement.lang = currentLang;
+  document.documentElement.dir = currentLang === "ku" ? "rtl" : "ltr";
 }
 
 function setQuizLanguage(lang) {
@@ -803,6 +812,7 @@ function removeQuizToolbar() {
 const TEMPLATE_JSON = String.raw`{
   "meta": {
     "language": "auto",
+    "content_language": "",
     "title": "تاقیکردنەوەی نموونە",
     "title_en": "Sample Quiz",
     "subtitle": "تاقیکردنەوەیەکی نموونە بۆ نیشاندانی شێوازی JSON",
@@ -873,6 +883,7 @@ function buildQuizFromJson(text) {
   quiz = normalized;
   questions = quiz.questions;
   langMode = quiz.langMode;
+  contentMode = quiz.contentMode;
   applyLangMode(resolveLangMode());
   prepareCategories();
 
@@ -917,6 +928,7 @@ function buildStandaloneHtml() {
   const data = {
     bilingual: isBilingual(),
     lang: quiz.lang || (isBilingual() ? "both" : "en"),
+    contentMode: contentMode,
     withHome: $("home-toggle").checked,
     title: quiz.title,
     subtitle: quiz.subtitle,
@@ -1028,21 +1040,25 @@ const UI = {
     categoryScore: (cat, s, t) => \`\${cat}: \${td(s)} لە \${td(t)}\`, langLabel: "🌐 کوردی", homeLabel: "🏠 ماڵەوە", authorLabel: "نووسەری تاقیکردنەوە" }
 };
 let currentLang = DATA.lang === "en" ? "en" : "ku";
+const contentMode = (DATA.contentMode === "en" || DATA.contentMode === "ku") ? DATA.contentMode : "follow";
 const $ = id => document.getElementById(id);
 function safeText(v){ return v == null ? "" : String(v).trim(); }
-function td(v){ const s=String(v); if(currentLang!=="ku") return s; return s.replace(/[0-9]/g,d=>"٠١٢٣٤٥٦٧٨٩"[Number(d)]); }
-function pick(p){ if(!p||typeof p!=="object") return safeText(p); return safeText(p[currentLang])||safeText(p.ku)||safeText(p.en)||""; }
+function contentLang(){ return contentMode==="follow" ? currentLang : contentMode; }
+function tdLang(v,lang){ const s=String(v); if(lang!=="ku") return s; return s.replace(/[0-9]/g,d=>"٠١٢٣٤٥٦٧٨٩"[Number(d)]); }
+function td(v){ return tdLang(v,currentLang); }
+function tdc(v){ return tdLang(v,contentLang()); }
+function pickIn(p,lang){ if(!p||typeof p!=="object") return safeText(p); return safeText(p[lang])||safeText(p.ku)||safeText(p.en)||""; }
+function pick(p){ return pickIn(p,currentLang); }
+function pickContent(p){ return pickIn(p,contentLang()); }
 function t(){ return UI[currentLang]; }
 const RTL_RE=/[\u0590-\u05FF\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFF]/;
 function detectDir(text){ return RTL_RE.test(safeText(text))?"rtl":"ltr"; }
 function applyDirection(){
   const root=$("quiz-view"); if(!root) return;
-  const locked=currentLang==="ku"?"rtl":null;
-  root.querySelectorAll("*").forEach(el=>{ let text=""; for(const n of el.childNodes) if(n.nodeType===3) text+=n.nodeValue; if(!safeText(text)) return; el.dir=locked||detectDir(text); });
-  const list=$("start-list"); if(list){ const first=list.firstElementChild; const d=currentLang==="ku"?"rtl":(first&&first.dir?first.dir:"ltr"); list.dir=d; list.style.textAlign=d==="rtl"?"right":"left"; }
+  root.querySelectorAll("*").forEach(el=>{ let text=""; for(const n of el.childNodes) if(n.nodeType===3) text+=n.nodeValue; if(!safeText(text)) return; const lang=el.hasAttribute("data-content")?contentLang():currentLang; el.dir=lang==="ku"?"rtl":detectDir(text); });
+  const list=$("start-list"); if(list){ const first=list.firstElementChild; const d=contentLang()==="ku"?"rtl":(first&&first.dir?first.dir:"ltr"); list.dir=d; list.style.textAlign=d==="rtl"?"right":"left"; }
 }
-function activeText(){ if(!$("start-screen").classList.contains("hidden")){ const fb=$("start-list").firstChild?$("start-list").firstChild.textContent:""; return $("start-count").textContent+" "+fb; } if(!$("quiz-screen").classList.contains("hidden")) return $("question-text").textContent+" "+$("category-badge").textContent; return $("after-test").textContent; }
-function updateDir(){ const d=currentLang==="ku" ? "rtl" : detectDir(activeText()); document.documentElement.dir=d; document.documentElement.lang=d==="rtl"?"ku":"en"; }
+function updateDir(){ document.documentElement.dir=currentLang==="ku"?"rtl":"ltr"; document.documentElement.lang=currentLang; }
 function renderAuthor(){ const el=$("author-line"); const name=pick(DATA.author); el.textContent=name?t().authorLabel+" - "+name:""; }
 function shuffle(a){ const r=[...a]; for(let i=r.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [r[i],r[j]]=[r[j],r[i]]; } return r; }
 const COLORS=[{bg:"bg-sky-900/60",text:"text-sky-300",border:"border-sky-700"},{bg:"bg-emerald-900/60",text:"text-emerald-300",border:"border-emerald-700"},{bg:"bg-amber-900/60",text:"text-amber-300",border:"border-amber-700"},{bg:"bg-violet-900/60",text:"text-violet-300",border:"border-violet-700"},{bg:"bg-rose-900/60",text:"text-rose-300",border:"border-rose-700"},{bg:"bg-cyan-900/60",text:"text-cyan-300",border:"border-cyan-700"}];
@@ -1050,17 +1066,17 @@ const questions = DATA.questions;
 let categoryOrder=[], categoryColor=new Map(), quizQuestions=[], userAnswers=[], currentQuestionIndex=0;
 function catKey(q){ return q.category.ku||q.category.en||"—"; }
 function prepare(){ categoryOrder=[...new Set(questions.map(catKey))]; categoryColor=new Map(categoryOrder.map((k,i)=>[k,COLORS[i%COLORS.length]])); }
-function catLabel(key){ const f=questions.find(q=>catKey(q)===key); return f?pick(f.category):key; }
+function catLabel(key){ const f=questions.find(q=>catKey(q)===key); return f?pickContent(f.category):key; }
 function createQuiz(){ const out=[]; for(const c of categoryOrder){ for(const q of shuffle(questions.filter(x=>catKey(x)===c))){ const order=shuffle(q.optionsKu.map((_,i)=>i)); out.push({category:q.category,categoryKey:c,question:q.question,explanation:q.explanation,optionsKu:order.map(i=>q.optionsKu[i]),optionsEn:order.map(i=>q.optionsEn[i]),correct:order.indexOf(q.correct)}); } } return out; }
-function optionAt(q,i){ return currentLang==="en" ? (q.optionsEn[i]||q.optionsKu[i]||"") : (q.optionsKu[i]||q.optionsEn[i]||""); }
+function optionAt(q,i){ return contentLang()==="en" ? (q.optionsEn[i]||q.optionsKu[i]||"") : (q.optionsKu[i]||q.optionsEn[i]||""); }
 function setLang(lang){ currentLang=lang; const b=$("lang-btn"); if(b) b.textContent = lang==="en" ? "🌐 کوردی" : "🌐 English"; const hl=$("home-link"); if(hl) hl.textContent=t().homeLabel; $("quiz-title").textContent=pick(DATA.title)||"Quiz"; const sub=pick(DATA.subtitle); $("quiz-subtitle").textContent=sub; $("quiz-subtitle").className=sub?"text-slate-400 text-sm sm:text-base":"hidden"; $("results-title").textContent=t().resultsTitle; $("review-heading").textContent=t().reviewHeading; $("restart-btn").textContent=t().restart; renderAuthor(); if(!$("start-screen").classList.contains("hidden")) renderStart(); if(!$("quiz-screen").classList.contains("hidden")) loadQuestion(); if(!$("results-screen").classList.contains("hidden")) showResults(); updateDir(); applyDirection(); }
-function renderStart(){ $("start-count").textContent=t().startCount(questions.length); const list=$("start-list"); list.replaceChildren(); for(const key of categoryOrder){ const n=questions.filter(q=>catKey(q)===key).length; const li=document.createElement("li"); li.textContent=t().startCategory(n,catLabel(key)); list.appendChild(li); } for(const line of DATA.intro){ const text=pick(line); if(!text) continue; const li=document.createElement("li"); li.textContent="• "+text; list.appendChild(li); } $("start-btn").textContent=t().startBtn; }
+function renderStart(){ $("start-count").textContent=t().startCount(questions.length); const list=$("start-list"); list.replaceChildren(); for(const key of categoryOrder){ const n=questions.filter(q=>catKey(q)===key).length; const li=document.createElement("li"); li.setAttribute("data-content",""); li.textContent=t().startCategory(n,catLabel(key)); list.appendChild(li); } for(const line of DATA.intro){ const text=pick(line); if(!text) continue; const li=document.createElement("li"); li.textContent="• "+text; list.appendChild(li); } $("start-btn").textContent=t().startBtn; }
 function renderAfterTest(){ const box=$("after-test"); const text=pick(DATA.afterTest); box.replaceChildren(); box.classList.toggle("hidden",!text); if(!text) return; for(const line of text.split("\\n")){ if(!safeText(line)) continue; const p=document.createElement("p"); p.textContent=line; box.appendChild(p); } }
-function loadQuestion(){ const q=quizQuestions[currentQuestionIndex]; $("question-counter").textContent=t().counter(currentQuestionIndex+1,quizQuestions.length); $("progress-bar").style.width=(((currentQuestionIndex+1)/quizQuestions.length)*100)+"%"; const color=categoryColor.get(q.categoryKey)||COLORS[1]; const badge=$("category-badge"); badge.textContent=pick(q.category); badge.className=color.bg+" "+color.text+" px-3 py-1 rounded-full text-xs border "+color.border; $("question-text").textContent=td(currentQuestionIndex+1)+". "+pick(q.question); const c=$("options-container"); c.replaceChildren(); q.optionsKu.forEach((_,i)=>{ const b=document.createElement("button"); const sel=userAnswers[currentQuestionIndex]===i; b.type="button"; b.className="w-full p-4 rounded-xl border transition duration-200 font-medium text-start "+(sel?"bg-emerald-700 border-emerald-400 text-white":"bg-slate-700/60 hover:bg-slate-700 border-slate-600 text-slate-200"); b.textContent=String.fromCharCode(65+i)+") "+optionAt(q,i); b.addEventListener("click",()=>selectOption(i)); c.appendChild(b); }); const p=$("prev-btn"), n=$("next-btn"); p.textContent=t().prev; n.textContent=currentQuestionIndex===quizQuestions.length-1?t().finish:t().next; p.classList.toggle("hidden",currentQuestionIndex===0); n.classList.toggle("hidden",userAnswers[currentQuestionIndex]===null); updateDir(); applyDirection(); }
+function loadQuestion(){ const q=quizQuestions[currentQuestionIndex]; $("question-counter").textContent=t().counter(currentQuestionIndex+1,quizQuestions.length); $("progress-bar").style.width=(((currentQuestionIndex+1)/quizQuestions.length)*100)+"%"; const color=categoryColor.get(q.categoryKey)||COLORS[1]; const badge=$("category-badge"); badge.textContent=pickContent(q.category); badge.setAttribute("data-content",""); badge.className=color.bg+" "+color.text+" px-3 py-1 rounded-full text-xs border "+color.border; $("question-text").textContent=tdc(currentQuestionIndex+1)+". "+pickContent(q.question); const c=$("options-container"); c.replaceChildren(); q.optionsKu.forEach((_,i)=>{ const b=document.createElement("button"); b.setAttribute("data-content",""); const sel=userAnswers[currentQuestionIndex]===i; b.type="button"; b.className="w-full p-4 rounded-xl border transition duration-200 font-medium text-start "+(sel?"bg-emerald-700 border-emerald-400 text-white":"bg-slate-700/60 hover:bg-slate-700 border-slate-600 text-slate-200"); b.textContent=String.fromCharCode(65+i)+") "+optionAt(q,i); b.addEventListener("click",()=>selectOption(i)); c.appendChild(b); }); const p=$("prev-btn"), n=$("next-btn"); p.textContent=t().prev; n.textContent=currentQuestionIndex===quizQuestions.length-1?t().finish:t().next; p.classList.toggle("hidden",currentQuestionIndex===0); n.classList.toggle("hidden",userAnswers[currentQuestionIndex]===null); updateDir(); applyDirection(); }
 function selectOption(i){ userAnswers[currentQuestionIndex]=i; loadQuestion(); }
 function nextQuestion(){ if(userAnswers[currentQuestionIndex]===null){ alert(t().mustSelect); return; } if(currentQuestionIndex<quizQuestions.length-1){ currentQuestionIndex++; loadQuestion(); } else showResults(); }
 function previousQuestion(){ if(currentQuestionIndex>0){ currentQuestionIndex--; loadQuestion(); } }
-function showResults(){ $("quiz-screen").classList.add("hidden"); $("results-screen").classList.remove("hidden"); const rc=$("review-container"); rc.replaceChildren(); let score=0; const byCat={}; quizQuestions.forEach((q,i)=>{ if(!byCat[q.categoryKey]) byCat[q.categoryKey]={correct:0,total:0}; byCat[q.categoryKey].total++; const ua=userAnswers[i]; const ok=ua===q.correct; if(ok){ score++; byCat[q.categoryKey].correct++; } const card=document.createElement("div"); card.className="p-5 rounded-xl border "+(ok?"bg-emerald-950/30 border-emerald-800/60":"bg-rose-950/30 border-rose-800/60"); const top=document.createElement("div"); top.className="flex items-start justify-between gap-3 mb-3"; const st=document.createElement("span"); st.className="text-xs font-bold px-2.5 py-1 rounded-full "+(ok?"bg-emerald-800 text-emerald-200":"bg-rose-800 text-rose-200"); st.textContent=ok?t().correct:t().wrong; const num=document.createElement("span"); num.className="text-xs text-slate-400"; num.textContent=t().questionShort(i+1); top.append(st,num); const cat=document.createElement("p"); cat.className="text-xs text-slate-400 mb-2"; cat.textContent=pick(q.category); const qq=document.createElement("h4"); qq.className="font-semibold text-slate-100 mb-3"; qq.textContent=td(i+1)+". "+pick(q.question); const ya=document.createElement("p"); ya.className="text-sm mb-2 text-slate-300"; const yl=document.createElement("strong"); yl.textContent=t().yourAnswer; const yt=document.createElement("span"); yt.className=ok?"text-emerald-400 font-bold":"text-rose-400 font-bold"; yt.textContent=ua!==null?String.fromCharCode(65+ua)+") "+optionAt(q,ua):t().noAnswer; ya.append(yl,yt); card.append(top,cat,qq,ya); if(!ok){ const ca=document.createElement("p"); ca.className="text-sm mb-2 text-slate-300"; const cl=document.createElement("strong"); cl.textContent=t().correctAnswer; const av=document.createElement("span"); av.className="text-emerald-400 font-bold"; av.textContent=String.fromCharCode(65+q.correct)+") "+optionAt(q,q.correct); ca.append(cl,av); card.appendChild(ca); } const ex=document.createElement("div"); ex.className="mt-3 pt-3 border-t border-slate-700/60 text-xs sm:text-sm text-slate-300 bg-slate-900/40 p-3 rounded-lg"; const el=document.createElement("strong"); el.textContent=t().explanation; ex.append(el,document.createTextNode(pick(q.explanation))); card.appendChild(ex); rc.appendChild(card); }); $("score-display").textContent=t().score(score,quizQuestions.length); const cs=$("category-scores"); cs.replaceChildren(); for(const [k,r] of Object.entries(byCat)){ const p=document.createElement("p"); p.textContent=t().categoryScore(catLabel(k),r.correct,r.total); cs.appendChild(p); } renderAfterTest(); updateDir(); applyDirection(); }
+function showResults(){ $("quiz-screen").classList.add("hidden"); $("results-screen").classList.remove("hidden"); const rc=$("review-container"); rc.replaceChildren(); let score=0; const byCat={}; quizQuestions.forEach((q,i)=>{ if(!byCat[q.categoryKey]) byCat[q.categoryKey]={correct:0,total:0}; byCat[q.categoryKey].total++; const ua=userAnswers[i]; const ok=ua===q.correct; if(ok){ score++; byCat[q.categoryKey].correct++; } const card=document.createElement("div"); card.className="p-5 rounded-xl border "+(ok?"bg-emerald-950/30 border-emerald-800/60":"bg-rose-950/30 border-rose-800/60"); const top=document.createElement("div"); top.className="flex items-start justify-between gap-3 mb-3"; const st=document.createElement("span"); st.className="text-xs font-bold px-2.5 py-1 rounded-full "+(ok?"bg-emerald-800 text-emerald-200":"bg-rose-800 text-rose-200"); st.textContent=ok?t().correct:t().wrong; const num=document.createElement("span"); num.className="text-xs text-slate-400"; num.textContent=t().questionShort(i+1); top.append(st,num); const cat=document.createElement("p"); cat.className="text-xs text-slate-400 mb-2"; cat.setAttribute("data-content",""); cat.textContent=pickContent(q.category); const qq=document.createElement("h4"); qq.className="font-semibold text-slate-100 mb-3"; qq.setAttribute("data-content",""); qq.textContent=tdc(i+1)+". "+pickContent(q.question); const ya=document.createElement("p"); ya.className="text-sm mb-2 text-slate-300"; const yl=document.createElement("strong"); yl.textContent=t().yourAnswer; const yt=document.createElement("span"); yt.setAttribute("data-content",""); yt.className=ok?"text-emerald-400 font-bold":"text-rose-400 font-bold"; yt.textContent=ua!==null?String.fromCharCode(65+ua)+") "+optionAt(q,ua):t().noAnswer; ya.append(yl,yt); card.append(top,cat,qq,ya); if(!ok){ const ca=document.createElement("p"); ca.className="text-sm mb-2 text-slate-300"; const cl=document.createElement("strong"); cl.textContent=t().correctAnswer; const av=document.createElement("span"); av.setAttribute("data-content",""); av.className="text-emerald-400 font-bold"; av.textContent=String.fromCharCode(65+q.correct)+") "+optionAt(q,q.correct); ca.append(cl,av); card.appendChild(ca); } const ex=document.createElement("div"); ex.className="mt-3 pt-3 border-t border-slate-700/60 text-xs sm:text-sm text-slate-300 bg-slate-900/40 p-3 rounded-lg"; const el=document.createElement("strong"); el.textContent=t().explanation; ex.append(el,document.createTextNode(pick(q.explanation))); card.appendChild(ex); rc.appendChild(card); }); $("score-display").textContent=t().score(score,quizQuestions.length); const cs=$("category-scores"); cs.replaceChildren(); for(const [k,r] of Object.entries(byCat)){ const p=document.createElement("p"); p.textContent=t().categoryScore(catLabel(k),r.correct,r.total); cs.appendChild(p); } renderAfterTest(); updateDir(); applyDirection(); }
 function restart(){ $("results-screen").classList.add("hidden"); $("start-screen").classList.remove("hidden"); renderStart(); updateDir(); applyDirection(); }
 $("start-btn").addEventListener("click",()=>{ quizQuestions=createQuiz(); userAnswers=new Array(quizQuestions.length).fill(null); currentQuestionIndex=0; $("start-screen").classList.add("hidden"); $("results-screen").classList.add("hidden"); $("quiz-screen").classList.remove("hidden"); loadQuestion(); });
 $("next-btn").addEventListener("click",nextQuestion);

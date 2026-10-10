@@ -33,6 +33,12 @@ Test rules:
   direction switches and that Kurdish uses Kurdish digits.
 - Test both languages of the input too: a bilingual quiz and a single-language
   quiz, since the language switch must only appear for the bilingual one.
+- Test the two language axes independently: with `meta.content_language` pinned,
+  switching the interface must change the chrome, labels and explanations while
+  the question, answers and category stay in the pinned language and keep the
+  pinned direction; with it omitted, the content must follow the interface. Cover
+  the pin in both directions (`ku` content under an English interface and `en`
+  content under a Kurdish one).
 - Clean up any temporary test files you create; never leave them in the served
   directory.
 - Only after all checks pass, commit and push.
@@ -79,12 +85,23 @@ shuffled options, progress bar, per-category scores, review with explanations
 and keyboard navigation.
 
 Quiz content may be Kurdish, English, or both: each text field has a base key
-(Kurdish) and an English `_en` key. When both are present the quiz shows a
-Kurdish/English switch and follows the quiz's language for both content and
-chrome; when only one is present the quiz stays in that language. `meta.language`
-(`en`, `ku`, `both`, `auto`) can force that behaviour; resolve it through the
-existing `applyLangMode` pipeline rather than reading `meta` directly, so per-field
-fallback (a quiz fixed to one language still falling back per field) is preserved.
+(Kurdish) and an English `_en` key. Two independent language axes:
+
+- **Interface** (`meta.language`: `en`, `ku`, `both`, `auto`) — the chrome, the
+  title/subtitle/intro/author/after-test text and the explanations. `both`
+  (and `auto` when both languages are present) shows a Kurdish/English switch;
+  `en`/`ku` fixes it.
+- **Content** (`meta.content_language`: `ku`, `en`, or omitted) — the test
+  itself: question, answers and category. `ku`/`en` pins it regardless of the
+  interface; omitted means it follows the interface switch.
+
+So `meta.language: "both"` + `meta.content_language: "ku"` gives an interface
+that flips between Kurdish and English while the questions and answers stay
+Kurdish (and vice versa). Resolve the interface through the existing
+`applyLangMode` pipeline and select content with `pickContent`/`contentLang()`
+rather than reading `meta` directly, so per-field fallback (a quiz fixed to one
+language still falling back per field) is preserved. Content language is decoded
+once by `readContentMode` into `contentMode` (`follow`/`en`/`ku`).
 
 Optional `meta` extras, each with an `_en` key and the same per-language fallback:
 
@@ -97,11 +114,13 @@ Direction (RTL/LTR) is auto-detected from the text itself and applies to every
 text field — this is the standard, not an opt-in: `applyDirection()` walks the
 quiz view and sets each element's `dir` from the text it directly contains
 (Kurdish/Arabic/Hebrew letters via `RTL_RE` → RTL, otherwise LTR), so any new
-element is covered with no extra wiring. `meta.language: "ku"` locks everything
-RTL. The page direction (`updateDir`) samples only the active screen, so hidden
-screens do not leak. Always call `updateDir()` + `applyDirection()` at the end of
-a render (after the DOM is populated), so per-text fallback works: an English
-quiz with a Kurdish-only field renders that field RTL.
+element is covered with no extra wiring. Elements carrying `data-content` are
+locked to the content language (`ku` → RTL), the rest to the interface language;
+that is how the test stays RTL while the interface is English. The page
+direction (`updateDir`) follows the interface language and no longer samples the
+active screen. Always call `updateDir()` + `applyDirection()` at the end of a
+render (after the DOM is populated), so per-text fallback works: an English quiz
+with a Kurdish-only field renders that field RTL.
 
 The page can download the built quiz as a standalone HTML file (JSON embedded,
 no dependency on the maker), with an option to include a Home button that links
