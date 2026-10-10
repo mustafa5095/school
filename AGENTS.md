@@ -20,6 +20,9 @@ Vazirmatn font, slate/emerald palette, RTL, DOM-built UI, Kurdish digits). Copy
 it to create a new page, then register that page in `files.json` and
 `description.toml`. Do not list `template.html` itself as a page.
 
+Every page must include the author credit footer
+(`دروستکەر: مستەفا زەردەشت` / `Created by Mustafa Zardasht`).
+
 ## File metadata (`description.toml`)
 
 One section per file: `["<filename>.html"]` with keys:
