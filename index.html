@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ku" dir="rtl" id="html-root">
 <head>
@@ -6,160 +5,94 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0f172a">
 <title id="page-title">داشبۆردی پەڕەکانی ڕپۆزۆتۆری</title>
-
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
 <style>
-body {
-    font-family: 'Vazirmatn', sans-serif;
-}
-button, input, a {
-    -webkit-tap-highlight-color: transparent;
-}
-.file-card {
-    animation: fade-in .2s ease-out;
-}
-@keyframes fade-in {
-    from { opacity: 0; transform: translateY(5px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-:focus-visible {
-    outline: 2px solid #34d399;
-    outline-offset: 3px;
-}
+body { font-family: 'Vazirmatn', sans-serif; }
+button, input, a { -webkit-tap-highlight-color: transparent; }
+.file-card, .folder-card { animation: fade-in .2s ease-out; }
+@keyframes fade-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+:focus-visible { outline: 2px solid #34d399; outline-offset: 3px; }
 </style>
 </head>
-
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col p-5 sm:p-10 transition-colors duration-200">
-
 <div class="max-w-5xl w-full mx-auto flex-grow">
-
-    <header class="mb-10 flex flex-col sm:flex-row justify-between items-center gap-6 border-b border-slate-800 pb-6">
+    <header class="mb-8 flex flex-col sm:flex-row justify-between items-center gap-6 border-b border-slate-800 pb-6">
         <div class="text-center sm:text-start">
-            <h1 id="header-title" class="text-3xl font-bold text-emerald-400 mb-2">
-                داشبۆردی پەڕەکانی ڕپۆزۆتۆری
-            </h1>
-            <p id="header-subtitle" class="text-slate-400 text-sm">
-                لیستی سەرجەم فایلە HTMLـەکان بە ڕوونکردنەوە و ناونیشانەوە
-            </p>
+            <h1 id="header-title" class="text-3xl font-bold text-emerald-400 mb-2">داشبۆردی پەڕەکانی ڕپۆزۆتۆری</h1>
+            <p id="header-subtitle" class="text-slate-400 text-sm">لیستی سەرجەم فایلە HTMLـەکان بە ڕوونکردنەوە و ناونیشانەوە</p>
         </div>
-
         <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
-            <button
-                type="button"
-                id="lang-btn"
-                class="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 font-semibold px-4 py-2 rounded-xl text-sm transition w-full sm:w-auto">
-                🌐 English
-            </button>
-
+            <button type="button" id="lang-btn" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 font-semibold px-4 py-2 rounded-xl text-sm transition w-full sm:w-auto">🌐 English</button>
             <div class="w-full sm:w-64">
-                <input
-                    type="search"
-                    id="search-input"
-                    autocomplete="off"
-                    placeholder="گەڕان بەدوای فایلدا..."
-                    aria-label="Search HTML files"
-                    class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 transition">
+                <input type="search" id="search-input" autocomplete="off" placeholder="گەڕان بەدوای فایلدا..." aria-label="Search HTML files" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 transition">
             </div>
         </div>
     </header>
 
-    <div class="flex items-center justify-between gap-3 mb-5 text-sm">
-        <p id="status-text" class="text-slate-400" role="status" aria-live="polite"></p>
-
-        <button
-            type="button"
-            id="retry-btn"
-            class="hidden text-emerald-400 hover:text-emerald-300 underline underline-offset-4">
-            Retry
-        </button>
+    <div class="mb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <nav id="breadcrumbs" aria-label="Folder breadcrumb" class="flex flex-wrap items-center gap-2 text-sm min-h-8"></nav>
+        <div class="flex items-center justify-between sm:justify-end gap-3 text-sm">
+            <p id="status-text" class="text-slate-400" role="status" aria-live="polite"></p>
+            <button type="button" id="retry-btn" class="hidden text-emerald-400 hover:text-emerald-300 underline underline-offset-4">Retry</button>
+        </div>
     </div>
 
-    <main id="files-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    </main>
-
-    <div id="empty-state" class="hidden text-center py-16 text-slate-500">
-        هیچ فایلێکی HTML نەدۆزرایەوە.
-    </div>
-
+    <main id="files-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></main>
+    <div id="empty-state" class="hidden text-center py-16 text-slate-500">هیچ فایلێکی HTML نەدۆزرایەوە.</div>
 </div>
-
-<footer id="footer-text" class="text-center text-xs text-slate-600 mt-12 pt-4 border-t border-slate-800/80">
-    پەڕەی سەرەکی ئۆتۆماتیکی • دروستکراوە بە Tailwind CSS
-</footer>
+<footer id="footer-text" class="text-center text-xs text-slate-600 mt-12 pt-4 border-t border-slate-800/80">پەڕەی سەرەکی ئۆتۆماتیکی • دروستکراوە بە Tailwind CSS</footer>
 
 <script>
 "use strict";
 
-/*
- * Repository dashboard
- *
- * Supported file discovery methods, in priority order:
- * 1. files.json manifest
- * 2. GitHub API for GitHub Pages repositories
- * 3. HTML directory listing, if the server provides one
- * 4. Files declared in description.toml
- *
- * Recommended manifest format:
- * {
- *   "files": ["preview.html", "about.html", "projects/demo.html"]
- * }
- */
-
 const translations = {
     ku: {
-        lang: "ku",
-        dir: "rtl",
+        lang: "ku", dir: "rtl",
         title: "داشبۆردی پەڕەکانی ڕپۆزۆتۆری",
-        subtitle: "لیستی سەرجەم فایلە HTMLـەکان بە ڕوونکردنەوە و ناونیشانەوە",
+        subtitle: "لیستی فایلە HTMLـەکان بە ناونیشان، کورتە و پۆلێنکردن",
         searchPlaceholder: "گەڕان بەدوای فایلدا...",
         emptyState: "هیچ فایلێکی HTML نەدۆزرایەوە.",
+        noResults: "هیچ فایلێک یان پۆلێک لەگەڵ گەڕانەکەت نەگونجا.",
         noDesc: "هیچ کورتەیەک بۆ ئەم فایلە نەنووسراوە.",
         openBtn: "کردنەوەی پەڕە",
         footer: "پەڕەی سەرەکی ئۆتۆماتیکی • دروستکراوە بە Tailwind CSS",
-        nextLangName: "English",
-        loading: "تکایە چاوەڕێ بکە...",
-        count: n => `${n} فایل`,
-        failed: "نەتوانرا لیستی فایلەکان بە تەواوی بدۆزرێتەوە.",
-        retry: "هەوڵدانەوە",
-        noResults: "هیچ فایلێک لەگەڵ گەڕانەکەت نەگونجا.",
-        sourceManifest: "سەرچاوە: files.json",
-        sourceGitHub: "سەرچاوە: GitHub",
-        sourceDirectory: "سەرچاوە: لیستی بوخچە",
-        sourceMetadata: "سەرچاوە: description.toml"
+        nextLangName: "English", loading: "تکایە چاوەڕێ بکە...",
+        files: n => `${n} فایل`, folders: n => `${n} بوخچە`,
+        allPages: "هەموو پەڕەکان", back: "گەڕانەوە",
+        sourceManifest: "سەرچاوە: files.json", sourceGitHub: "سەرچاوە: GitHub",
+        sourceDirectory: "سەرچاوە: لیستی بوخچە", sourceMetadata: "سەرچاوە: description.toml",
+        failed: "نەتوانرا لیستی فایلەکان بە تەواوی بدۆزرێتەوە.", retry: "هەوڵدانەوە",
+        inCategory: "پۆل"
     },
     en: {
-        lang: "en",
-        dir: "ltr",
+        lang: "en", dir: "ltr",
         title: "Repository Pages Dashboard",
-        subtitle: "Browse HTML files with titles and descriptions",
+        subtitle: "Browse HTML files by title, description, and category",
         searchPlaceholder: "Search files...",
         emptyState: "No HTML files found.",
+        noResults: "No files or categories match your search.",
         noDesc: "No description has been provided for this file.",
         openBtn: "Open Page",
         footer: "Automatic Repository Index • Built with Tailwind CSS",
-        nextLangName: "کوردی",
-        loading: "Loading files...",
-        count: n => `${n} file${n === 1 ? "" : "s"}`,
-        failed: "Could not discover all repository files.",
-        retry: "Retry",
-        noResults: "No files match your search.",
-        sourceManifest: "Source: files.json",
-        sourceGitHub: "Source: GitHub",
-        sourceDirectory: "Source: directory listing",
-        sourceMetadata: "Source: description.toml"
+        nextLangName: "کوردی", loading: "Loading files...",
+        files: n => `${n} file${n === 1 ? "" : "s"}`,
+        folders: n => `${n} folder${n === 1 ? "" : "s"}`,
+        allPages: "All pages", back: "Back",
+        sourceManifest: "Source: files.json", sourceGitHub: "Source: GitHub",
+        sourceDirectory: "Source: directory listing", sourceMetadata: "Source: description.toml",
+        failed: "Could not discover all repository files.", retry: "Retry",
+        inCategory: "Category"
     }
 };
 
 const DEFAULT_FILES = ["index.html", "preview.html"];
-
 let currentLang = "ku";
 let metadata = {};
 let fileList = [];
-let discoverySource = "";
+let discoverySource = "metadata";
 let loading = false;
-
+let currentCategoryPath = [];
 const $ = id => document.getElementById(id);
 
 function safeText(value) {
@@ -168,44 +101,21 @@ function safeText(value) {
 
 function normalisePath(path) {
     if (typeof path !== "string") return null;
-
     path = path.trim().replace(/\\/g, "/");
-
-    if (!path || path.startsWith("/") || path.includes("?") ||
-        path.includes("#") || path.includes("\0")) {
-        return null;
-    }
-
+    if (!path || path.startsWith("/") || path.includes("?") || path.includes("#") || path.includes("\0")) return null;
     const parts = path.split("/");
-
-    if (parts.some(part => !part || part === "." || part === "..")) {
-        return null;
-    }
-
-    if (!/\.html?$/i.test(path)) return null;
-
-    return path;
+    if (parts.some(part => !part || part === "." || part === "..")) return null;
+    return /\.html?$/i.test(path) ? path : null;
 }
 
-/*
- * Lightweight TOML parser for common description.toml files.
- *
- * Supports:
- * [filename.html]
- * [files."filename.html"]
- * title = "Example"
- * title_en = "Example"
- * description = "Description"
- *
- * For complex TOML, use JSON metadata instead.
- */
+// Lightweight parser for common description.toml metadata sections.
+// Supports [about.html], ["about.html"], and [files."about.html"].
 function parseTOML(source) {
     const result = {};
     let section = null;
 
     function parseValue(raw) {
         raw = raw.trim();
-
         if (raw.startsWith('"')) {
             try {
                 const parsed = JSON.parse(raw);
@@ -214,361 +124,349 @@ function parseTOML(source) {
                 return raw.slice(1, raw.endsWith('"') ? -1 : undefined);
             }
         }
-
         if (raw.startsWith("'")) {
             const end = raw.lastIndexOf("'");
             return raw.slice(1, end > 0 ? end : undefined);
         }
-
         return raw;
     }
 
     for (const originalLine of source.split(/\r?\n/)) {
         const line = originalLine.trim();
-
         if (!line || line.startsWith("#")) continue;
 
         const sectionMatch = line.match(/^\[(.+)\]$/);
-
         if (sectionMatch) {
             let name = sectionMatch[1].trim();
-
-            if (name.startsWith("files.")) {
-                name = name.slice(6).trim();
-            }
-
-            if (
-                (name.startsWith('"') && name.endsWith('"')) ||
-                (name.startsWith("'") && name.endsWith("'"))
-            ) {
+            if (name.startsWith("files.")) name = name.slice(6).trim();
+            if ((name.startsWith('"') && name.endsWith('"')) || (name.startsWith("'") && name.endsWith("'"))) {
                 name = name.slice(1, -1);
             }
-
             const path = normalisePath(name);
-
-            if (path) {
-                section = path;
-                result[section] ??= {};
-            } else {
-                section = null;
-            }
-
+            section = path;
+            if (section) result[section] ??= {};
             continue;
         }
-
         if (!section) continue;
 
-        // Find the first equals sign outside quoted strings.
-        let quote = "";
-        let escaped = false;
-        let equalsIndex = -1;
-
+        // Split key/value on the first equals sign outside quotes.
+        let quote = "", escaped = false, equalsIndex = -1;
         for (let i = 0; i < line.length; i++) {
             const char = line[i];
-
-            if (escaped) {
-                escaped = false;
-                continue;
-            }
-
-            if (char === "\\" && quote === '"') {
-                escaped = true;
-                continue;
-            }
-
-            if ((char === '"' || char === "'") && !quote) {
-                quote = char;
-                continue;
-            }
-
-            if (char === quote && quote) {
-                quote = "";
-                continue;
-            }
-
-            if (char === "=" && !quote) {
-                equalsIndex = i;
-                break;
-            }
+            if (escaped) { escaped = false; continue; }
+            if (char === "\\" && quote === '"') { escaped = true; continue; }
+            if ((char === '"' || char === "'") && !quote) { quote = char; continue; }
+            if (char === quote && quote) { quote = ""; continue; }
+            if (char === "=" && !quote) { equalsIndex = i; break; }
         }
-
         if (equalsIndex < 0) continue;
 
         const key = line.slice(0, equalsIndex).trim();
-
         if (!/^[a-zA-Z0-9_-]+$/.test(key)) continue;
 
-        // Ignore comments outside quoted strings.
         let raw = line.slice(equalsIndex + 1).trim();
-        quote = "";
-        escaped = false;
-
+        quote = ""; escaped = false;
         for (let i = 0; i < raw.length; i++) {
             const char = raw[i];
-
-            if (escaped) {
-                escaped = false;
-                continue;
-            }
-
-            if (char === "\\" && quote === '"') {
-                escaped = true;
-                continue;
-            }
-
-            if ((char === '"' || char === "'") && !quote) {
-                quote = char;
-                continue;
-            }
-
-            if (char === quote && quote) {
-                quote = "";
-                continue;
-            }
-
-            if (char === "#" && !quote) {
-                raw = raw.slice(0, i).trim();
-                break;
-            }
+            if (escaped) { escaped = false; continue; }
+            if (char === "\\" && quote === '"') { escaped = true; continue; }
+            if ((char === '"' || char === "'") && !quote) { quote = char; continue; }
+            if (char === quote && quote) { quote = ""; continue; }
+            if (char === "#" && !quote) { raw = raw.slice(0, i).trim(); break; }
         }
-
         result[section][key] = parseValue(raw);
     }
-
     return result;
 }
 
 async function fetchText(url) {
-    const response = await fetch(url, {
-        cache: "no-cache"
-    });
-
-    if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${url}`);
-    }
-
+    const response = await fetch(url, { cache: "no-cache" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}: ${url}`);
     return response.text();
 }
-
-async function fetchJSON(url) {
-    const text = await fetchText(url);
-    return JSON.parse(text);
-}
+async function fetchJSON(url) { return JSON.parse(await fetchText(url)); }
 
 function metadataFiles() {
-    return Object.keys(metadata)
-        .map(normalisePath)
-        .filter(Boolean);
+    return Object.keys(metadata).map(normalisePath).filter(Boolean);
 }
 
 function filesFromManifest(data) {
-    const files = Array.isArray(data)
-        ? data
-        : data && Array.isArray(data.files)
-            ? data.files
-            : [];
-
+    const files = Array.isArray(data) ? data : (data && Array.isArray(data.files) ? data.files : []);
     return files.map(normalisePath).filter(Boolean);
 }
 
 async function loadMetadata() {
     metadata = {};
-
-    // Prefer JSON metadata if provided.
     try {
         const data = await fetchJSON("./description.json");
-
         if (data && typeof data === "object" && !Array.isArray(data)) {
-            metadata = data.files && typeof data.files === "object"
-                ? data.files
-                : data;
+            metadata = data.files && typeof data.files === "object" ? data.files : data;
             return;
         }
-    } catch {
-        // description.json is optional.
-    }
-
+    } catch { /* description.json is optional */ }
     try {
         metadata = parseTOML(await fetchText("./description.toml"));
-    } catch {
-        // Metadata is optional.
-    }
+    } catch { /* metadata is optional */ }
 }
 
-/*
- * GitHub Pages repository detection.
- *
- * User site:
- *   username.github.io/
- *
- * Project site:
- *   username.github.io/repository/
- *
- * This public API lookup needs no token for public repositories.
- */
 function getGitHubPagesRepository() {
     const hostname = location.hostname.toLowerCase();
-
     if (!hostname.endsWith(".github.io")) return null;
-
     const owner = hostname.slice(0, -".github.io".length);
     const segments = location.pathname.split("/").filter(Boolean);
-
-    const repo = segments.length
-        ? segments[0]
-        : `${owner}.github.io`;
-
-    return { owner, repo };
+    return { owner, repo: segments.length ? segments[0] : `${owner}.github.io` };
 }
 
 async function discoverFromGitHub() {
     const repoInfo = getGitHubPagesRepository();
-
     if (!repoInfo) return null;
-
-    const allFiles = [];
-    const perPage = 100;
-
-    // Recursive Git tree returns files in subdirectories too.
-    const repository = encodeURIComponent(repoInfo.owner) + "/" +
-                       encodeURIComponent(repoInfo.repo);
-
-    const info = await fetchJSON(
-        `https://api.github.com/repos/${repository}`
-    );
-
-    const tree = await fetchJSON(
-        `https://api.github.com/repos/${repository}/git/trees/${encodeURIComponent(info.default_branch)}?recursive=1`
-    );
-
-    if (!Array.isArray(tree.tree)) {
-        throw new Error("Unexpected GitHub tree response.");
-    }
-
-    for (const item of tree.tree) {
-        if (item.type !== "blob") continue;
-
-        const path = normalisePath(item.path);
-
-        if (path) allFiles.push(path);
-    }
-
-    return allFiles;
+    const repository = `${encodeURIComponent(repoInfo.owner)}/${encodeURIComponent(repoInfo.repo)}`;
+    const info = await fetchJSON(`https://api.github.com/repos/${repository}`);
+    const tree = await fetchJSON(`https://api.github.com/repos/${repository}/git/trees/${encodeURIComponent(info.default_branch)}?recursive=1`);
+    if (!Array.isArray(tree.tree)) throw new Error("Unexpected GitHub tree response.");
+    return tree.tree.filter(item => item.type === "blob").map(item => normalisePath(item.path)).filter(Boolean);
 }
 
 async function discoverFromDirectory() {
     const html = await fetchText("./");
     const doc = new DOMParser().parseFromString(html, "text/html");
     const files = [];
-
+    const currentDir = new URL("./", location.href);
     for (const link of doc.querySelectorAll("a[href]")) {
         const href = link.getAttribute("href");
-
         if (!href) continue;
-
         let url;
-
-        try {
-            url = new URL(href, location.href);
-        } catch {
-            continue;
-        }
-
-        // Do not add files from other origins or query-string URLs.
-        if (url.origin !== location.origin || url.search || url.hash) {
-            continue;
-        }
-
-        const currentDir = new URL("./", location.href);
-
-        if (!url.pathname.startsWith(currentDir.pathname)) continue;
-
+        try { url = new URL(href, location.href); } catch { continue; }
+        if (url.origin !== location.origin || url.search || url.hash || !url.pathname.startsWith(currentDir.pathname)) continue;
         let relativePath = url.pathname.slice(currentDir.pathname.length);
-
-        try {
-            relativePath = decodeURIComponent(relativePath);
-        } catch {
-            continue;
-        }
-
+        try { relativePath = decodeURIComponent(relativePath); } catch { continue; }
         const path = normalisePath(relativePath);
-
         if (path) files.push(path);
     }
-
     return files;
 }
 
 function uniqueFiles(files) {
-    return [...new Set(files.map(normalisePath).filter(Boolean))]
-        .sort((a, b) => a.localeCompare(b, undefined, {
-            sensitivity: "base"
-        }));
+    return [...new Set(files.map(normalisePath).filter(Boolean))].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
 }
 
 async function discoverFiles() {
-    // 1. Explicit manifest: predictable on any static host.
     try {
-        const manifest = await fetchJSON("./files.json");
-        const files = filesFromManifest(manifest);
+        const files = filesFromManifest(await fetchJSON("./files.json"));
+        if (files.length) { discoverySource = "manifest"; return uniqueFiles(files); }
+    } catch { /* optional manifest */ }
 
-        if (files.length) {
-            discoverySource = "manifest";
-            return uniqueFiles(files);
-        }
-    } catch {
-        // Manifest is optional.
-    }
-
-    // 2. GitHub Pages: discover repository HTML files recursively.
     try {
         const files = await discoverFromGitHub();
-
-        if (files && files.length) {
-            discoverySource = "github";
-            return uniqueFiles(files);
-        }
+        if (files && files.length) { discoverySource = "github"; return uniqueFiles(files); }
     } catch (error) {
         console.warn("GitHub API discovery failed:", error);
     }
 
-    // 3. Web servers that expose directory listings.
     try {
         const files = await discoverFromDirectory();
-
-        if (files.length) {
-            discoverySource = "directory";
-            return uniqueFiles(files);
-        }
-    } catch {
-        // Directory listing is often disabled.
-    }
-
-    // 4. Metadata and known default files.
-    const fallback = uniqueFiles([
-        ...DEFAULT_FILES,
-        ...metadataFiles()
-    ]);
+        if (files.length) { discoverySource = "directory"; return uniqueFiles(files); }
+    } catch { /* directory listing is often disabled */ }
 
     discoverySource = "metadata";
-
-    return fallback;
+    return uniqueFiles([...DEFAULT_FILES, ...metadataFiles()]);
 }
 
 function getSourceLabel() {
     const t = translations[currentLang];
+    return ({ manifest: t.sourceManifest, github: t.sourceGitHub, directory: t.sourceDirectory, metadata: t.sourceMetadata })[discoverySource] || t.sourceMetadata;
+}
 
-    switch (discoverySource) {
-        case "manifest": return t.sourceManifest;
-        case "github": return t.sourceGitHub;
-        case "directory": return t.sourceDirectory;
-        default: return t.sourceMetadata;
+function getMetadata(file) { return metadata[file] || {}; }
+function getTitle(file) {
+    const meta = getMetadata(file);
+    return safeText(meta[`title_${currentLang}`] || (currentLang === "en" ? meta.title : meta.title_en) || meta.title || file.split("/").pop());
+}
+function getDescription(file) {
+    const meta = getMetadata(file);
+    return safeText(meta[`description_${currentLang}`] || (currentLang === "en" ? meta.description : meta.description_en) || meta.description || meta.description_en || translations[currentLang].noDesc);
+}
+
+// Category values are virtual UI paths, not physical directory names.
+// For example, "Quizes/Week1" creates a Quizes folder and a Week1 subfolder.
+function getCategoryParts(file, lang = currentLang) {
+    const meta = getMetadata(file);
+    const preferred = safeText(meta[`category_${lang}`]).trim();
+    const fallback = lang === "en"
+        ? safeText(meta.category).trim()
+        : safeText(meta.category_en).trim();
+    const category = preferred || fallback;
+    return category.split("/").map(part => part.trim()).filter(Boolean);
+}
+
+function getCategoryLabel(file, lang = currentLang) {
+    return getCategoryParts(file, lang).join(" / ");
+}
+
+function currentPathKey(path) { return JSON.stringify(path); }
+function pathStartsWith(path, prefix) {
+    return prefix.length <= path.length && prefix.every((part, index) => path[index] === part);
+}
+function samePath(a, b) { return a.length === b.length && pathStartsWith(a, b); }
+
+function makeButton(label, className, onClick) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = className;
+    button.textContent = label;
+    button.addEventListener("click", onClick);
+    return button;
+}
+
+function renderBreadcrumbs(searching = false) {
+    const nav = $("breadcrumbs");
+    nav.replaceChildren();
+    if (searching) {
+        const label = document.createElement("span");
+        label.className = "text-slate-300";
+        label.textContent = currentLang === "en" ? "Search results" : "ئەنجامی گەڕان";
+        nav.appendChild(label);
+        return;
     }
+
+    const root = makeButton(translations[currentLang].allPages,
+        "text-emerald-400 hover:text-emerald-300 underline underline-offset-4",
+        () => { currentCategoryPath = []; renderCards($("search-input").value); });
+    nav.appendChild(root);
+
+    let accumulated = [];
+    for (const segment of currentCategoryPath) {
+        const separator = document.createElement("span");
+        separator.className = "text-slate-600";
+        separator.textContent = "/";
+        nav.appendChild(separator);
+        accumulated = [...accumulated, segment];
+        const targetPath = [...accumulated];
+        const crumb = makeButton(segment,
+            "text-emerald-400 hover:text-emerald-300 underline underline-offset-4",
+            () => { currentCategoryPath = targetPath; renderCards($("search-input").value); });
+        nav.appendChild(crumb);
+    }
+}
+
+function buildFolderList(files, folderPath) {
+    const folders = new Map();
+    for (const file of files) {
+        const category = getCategoryParts(file);
+        if (!pathStartsWith(category, folderPath) || category.length <= folderPath.length) continue;
+        const childName = category[folderPath.length];
+        const childPath = [...folderPath, childName];
+        const key = currentPathKey(childPath);
+        if (!folders.has(key)) folders.set(key, { name: childName, path: childPath, files: [] });
+        folders.get(key).files.push(file);
+    }
+    return [...folders.values()].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
+}
+
+function makeFolderCard(folder) {
+    const t = translations[currentLang];
+    const count = folder.files.length;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "folder-card text-start w-full bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 hover:border-emerald-500/50 rounded-2xl p-6 transition duration-300 shadow-lg group";
+    button.setAttribute("aria-label", `${folder.name}, ${t.files(count)}`);
+
+    const top = document.createElement("div");
+    top.className = "flex items-start gap-4";
+    const icon = document.createElement("div");
+    icon.className = "shrink-0 rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-3 text-2xl";
+    icon.textContent = "📁";
+    const details = document.createElement("div");
+    details.className = "min-w-0 flex-1";
+    const heading = document.createElement("h2");
+    heading.className = "text-lg font-semibold text-white mb-2 group-hover:text-emerald-300 transition break-words";
+    heading.textContent = folder.name;
+    const description = document.createElement("p");
+    description.className = "text-slate-400 text-sm";
+    description.textContent = t.files(count);
+    details.append(heading, description);
+    top.append(icon, details);
+
+    const bottom = document.createElement("div");
+    bottom.className = "mt-5 pt-4 border-t border-slate-700/60 flex justify-between items-center text-sm text-emerald-400";
+    const open = document.createElement("span");
+    open.textContent = currentLang === "en" ? "Open folder" : "کردنەوەی بوخچە";
+    const arrow = document.createElement("span");
+    arrow.textContent = currentLang === "ku" ? "←" : "→";
+    bottom.append(open, arrow);
+    button.append(top, bottom);
+    button.addEventListener("click", () => {
+        currentCategoryPath = [...folder.path];
+        renderCards($("search-input").value);
+    });
+    return button;
+}
+
+function makeArrow() {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("fill", "none");
+    svg.setAttribute("stroke", "currentColor");
+    svg.setAttribute("stroke-width", "2");
+    svg.setAttribute("stroke-linecap", "round");
+    svg.setAttribute("stroke-linejoin", "round");
+    svg.setAttribute("aria-hidden", "true");
+    svg.classList.add("w-4", "h-4");
+    if (currentLang === "ku") svg.classList.add("rotate-180");
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", "M14 5l7 7m0 0l-7 7m7-7H3");
+    svg.appendChild(path);
+    return svg;
+}
+
+function createFileCard(file, showCategory = false) {
+    const t = translations[currentLang];
+    const card = document.createElement("article");
+    card.className = "file-card bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 hover:border-emerald-500/50 rounded-2xl p-6 transition duration-300 flex flex-col justify-between shadow-lg group";
+
+    const top = document.createElement("div");
+    const badgeRow = document.createElement("div");
+    badgeRow.className = "flex items-center mb-3";
+    const badge = document.createElement("span");
+    badge.className = "text-xs font-mono bg-slate-900 text-emerald-400 px-2.5 py-1 rounded-lg border border-slate-700 break-all";
+    badge.textContent = file;
+    badgeRow.appendChild(badge);
+
+    const title = document.createElement("h2");
+    title.className = "text-lg font-semibold text-white mb-2 group-hover:text-emerald-300 transition break-words";
+    title.textContent = getTitle(file);
+    const description = document.createElement("p");
+    description.className = "text-slate-400 text-sm leading-relaxed mb-4 whitespace-pre-line break-words";
+    description.textContent = getDescription(file);
+    top.append(badgeRow, title, description);
+
+    const categoryLabel = showCategory ? getCategoryLabel(file) : "";
+    if (categoryLabel) {
+        const category = document.createElement("p");
+        category.className = "text-xs text-slate-500 mb-4 flex items-center gap-1 break-words";
+        const icon = document.createElement("span");
+        icon.textContent = "📁";
+        const label = document.createElement("span");
+        label.textContent = `${t.inCategory}: ${categoryLabel}`;
+        category.append(icon, label);
+        top.appendChild(category);
+    }
+
+    const actionRow = document.createElement("div");
+    actionRow.className = "pt-4 border-t border-slate-700/60 flex justify-end";
+    const openLink = document.createElement("a");
+    openLink.href = file;
+    openLink.target = "_blank";
+    openLink.rel = "noopener noreferrer";
+    openLink.className = "bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition shadow-md inline-flex items-center gap-2";
+    openLink.append(document.createTextNode(t.openBtn), makeArrow());
+    actionRow.appendChild(openLink);
+    card.append(top, actionRow);
+    return card;
 }
 
 function updateUIStrings() {
     const t = translations[currentLang];
-
     $("html-root").lang = t.lang;
     $("html-root").dir = t.dir;
     $("page-title").textContent = t.title;
@@ -580,123 +478,7 @@ function updateUIStrings() {
     $("footer-text").textContent = t.footer;
     $("lang-btn").textContent = `🌐 ${t.nextLangName}`;
     $("retry-btn").textContent = t.retry;
-
     renderCards($("search-input").value);
-}
-
-function getMetadata(file) {
-    return metadata[file] || {};
-}
-
-function getTitle(file) {
-    const meta = getMetadata(file);
-
-    return safeText(
-        meta[`title_${currentLang}`] ||
-        meta.title ||
-        file.split("/").pop()
-    );
-}
-
-function getDescription(file) {
-    const meta = getMetadata(file);
-
-    return safeText(
-        meta[`description_${currentLang}`] ||
-        meta.description ||
-        translations[currentLang].noDesc
-    );
-}
-
-function makeArrow() {
-    const svg = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "svg"
-    );
-
-    svg.setAttribute("viewBox", "0 0 24 24");
-    svg.setAttribute("fill", "none");
-    svg.setAttribute("stroke", "currentColor");
-    svg.setAttribute("stroke-width", "2");
-    svg.setAttribute("stroke-linecap", "round");
-    svg.setAttribute("stroke-linejoin", "round");
-    svg.setAttribute("aria-hidden", "true");
-    svg.classList.add("w-4", "h-4");
-
-    if (currentLang === "ku") {
-        svg.classList.add("rotate-180");
-    }
-
-    const path = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "path"
-    );
-
-    path.setAttribute("d", "M14 5l7 7m0 0l-7 7m7-7H3");
-    svg.appendChild(path);
-
-    return svg;
-}
-
-function createCard(file) {
-    const t = translations[currentLang];
-
-    const card = document.createElement("article");
-    card.className =
-        "file-card bg-slate-800/80 hover:bg-slate-800 " +
-        "border border-slate-700/80 hover:border-emerald-500/50 " +
-        "rounded-2xl p-6 transition duration-300 flex flex-col " +
-        "justify-between shadow-lg group";
-
-    const top = document.createElement("div");
-
-    const badgeRow = document.createElement("div");
-    badgeRow.className = "flex items-center mb-3";
-
-    const badge = document.createElement("span");
-    badge.className =
-        "text-xs font-mono bg-slate-900 text-emerald-400 " +
-        "px-2.5 py-1 rounded-lg border border-slate-700 break-all";
-    badge.textContent = file;
-
-    badgeRow.appendChild(badge);
-
-    const title = document.createElement("h2");
-    title.className =
-        "text-lg font-semibold text-white mb-2 " +
-        "group-hover:text-emerald-300 transition break-words";
-    title.textContent = getTitle(file);
-
-    const description = document.createElement("p");
-    description.className =
-        "text-slate-400 text-sm leading-relaxed mb-6 whitespace-pre-line break-words";
-    description.textContent = getDescription(file);
-
-    top.append(badgeRow, title, description);
-
-    const actionRow = document.createElement("div");
-    actionRow.className =
-        "pt-4 border-t border-slate-700/60 flex justify-end";
-
-    const openLink = document.createElement("a");
-    openLink.href = file;
-    openLink.className =
-        "bg-emerald-600 hover:bg-emerald-500 text-white text-sm " +
-        "font-semibold px-5 py-2.5 rounded-xl transition shadow-md " +
-        "inline-flex items-center gap-2";
-
-    openLink.target = "_blank";
-    openLink.rel = "noopener noreferrer";
-
-    openLink.append(
-        document.createTextNode(t.openBtn),
-        makeArrow()
-    );
-
-    actionRow.appendChild(openLink);
-    card.append(top, actionRow);
-
-    return card;
 }
 
 function renderCards(filterText = "") {
@@ -704,110 +486,100 @@ function renderCards(filterText = "") {
     const empty = $("empty-state");
     const status = $("status-text");
     const t = translations[currentLang];
-
-    grid.replaceChildren();
-
     const query = filterText.trim().toLocaleLowerCase();
-
-    const filtered = fileList.filter(file => {
-        const searchable = [
-            file,
-            getTitle(file),
-            getDescription(file)
-        ].join(" ").toLocaleLowerCase();
-
-        return searchable.includes(query);
-    });
+    grid.replaceChildren();
 
     if (loading) {
         empty.classList.add("hidden");
         status.textContent = t.loading;
+        renderBreadcrumbs(false);
         return;
     }
 
-    if (filtered.length === 0) {
-        empty.textContent = query ? t.noResults : t.emptyState;
+    // Searching always searches the complete list, not only the current folder.
+    if (query) {
+        renderBreadcrumbs(true);
+        const matchingFiles = fileList.filter(file => {
+            const meta = getMetadata(file);
+            const searchable = [
+                file, getTitle(file), getDescription(file),
+                safeText(meta.category), safeText(meta.category_en),
+                getCategoryLabel(file, "ku"), getCategoryLabel(file, "en")
+            ].join(" ").toLocaleLowerCase();
+            return searchable.includes(query);
+        });
+        if (!matchingFiles.length) {
+            empty.textContent = t.noResults;
+            empty.classList.remove("hidden");
+        } else {
+            empty.classList.add("hidden");
+            const fragment = document.createDocumentFragment();
+            matchingFiles.forEach(file => fragment.appendChild(createFileCard(file, true)));
+            grid.appendChild(fragment);
+        }
+        status.textContent = `${t.files(matchingFiles.length)} · ${getSourceLabel()}`;
+        return;
+    }
+
+    renderBreadcrumbs(false);
+    const folders = buildFolderList(fileList, currentCategoryPath);
+    const directFiles = fileList.filter(file => samePath(getCategoryParts(file), currentCategoryPath));
+    const fragment = document.createDocumentFragment();
+    folders.forEach(folder => fragment.appendChild(makeFolderCard(folder)));
+    directFiles.forEach(file => fragment.appendChild(createFileCard(file, false)));
+    grid.appendChild(fragment);
+
+    if (folders.length + directFiles.length === 0) {
+        empty.textContent = t.emptyState;
         empty.classList.remove("hidden");
     } else {
         empty.classList.add("hidden");
-
-        const fragment = document.createDocumentFragment();
-
-        for (const file of filtered) {
-            fragment.appendChild(createCard(file));
-        }
-
-        grid.appendChild(fragment);
     }
 
-    status.textContent = `${t.count(filtered.length)} · ${getSourceLabel()}`;
+    const countText = [t.folders(folders.length), t.files(directFiles.length)].join(" · ");
+    status.textContent = `${countText} · ${getSourceLabel()}`;
 }
 
 function toggleLanguage() {
     currentLang = currentLang === "ku" ? "en" : "ku";
-
-    try {
-        localStorage.setItem("dashboard_lang", currentLang);
-    } catch {
-        // Storage may be unavailable in private or restricted contexts.
-    }
-
+    // Folder names can be translated in TOML, so reset navigation when switching language.
+    currentCategoryPath = [];
+    try { localStorage.setItem("dashboard_lang", currentLang); } catch { /* storage may be blocked */ }
     updateUIStrings();
 }
 
 async function initDashboard() {
     if (loading) return;
-
     loading = true;
     $("retry-btn").classList.add("hidden");
-    renderCards();
+    renderCards($("search-input").value);
 
     try {
         await loadMetadata();
         fileList = await discoverFiles();
-
-        // A file list can be empty even if the metadata file exists.
         loading = false;
         updateUIStrings();
     } catch (error) {
         console.error("Dashboard initialization failed:", error);
-
-        fileList = uniqueFiles([
-            ...DEFAULT_FILES,
-            ...metadataFiles()
-        ]);
-
+        fileList = uniqueFiles([...DEFAULT_FILES, ...metadataFiles()]);
         discoverySource = "metadata";
         loading = false;
         updateUIStrings();
-
         $("retry-btn").classList.remove("hidden");
-        $("status-text").textContent =
-            translations[currentLang].failed;
+        $("status-text").textContent = translations[currentLang].failed;
     }
 }
 
 try {
     const savedLanguage = localStorage.getItem("dashboard_lang");
-
-    if (savedLanguage === "ku" || savedLanguage === "en") {
-        currentLang = savedLanguage;
-    }
-} catch {
-    // Default to Kurdish.
-}
+    if (savedLanguage === "ku" || savedLanguage === "en") currentLang = savedLanguage;
+} catch { /* default to Kurdish */ }
 
 $("lang-btn").addEventListener("click", toggleLanguage);
-
-$("search-input").addEventListener("input", event => {
-    renderCards(event.target.value);
-});
-
+$("search-input").addEventListener("input", event => renderCards(event.target.value));
 $("retry-btn").addEventListener("click", initDashboard);
-
 updateUIStrings();
 initDashboard();
 </script>
-
 </body>
 </html>
