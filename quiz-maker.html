@@ -12,6 +12,9 @@
   language switch; "en" or "ku" fixes it to that single language. Without the
   key it falls back to auto. RTL/LTR is chosen to match the language in use.
 
+  Optional meta.after_test / meta.after_test_en text is shown on the results
+  screen after the quiz is finished.
+
   This page is intentionally not listed in files.json (so it stays off the
   dashboard). It is linked from README.md instead.
 -->
@@ -49,7 +52,7 @@ textarea{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
     </header>
 
     <div class="mb-4 bg-slate-700/50 p-4 rounded-xl border border-slate-600 text-slate-300 text-xs sm:text-sm leading-relaxed">
-      Format: title, subtitle and a list of questions. Set <code class="text-emerald-300">meta.language</code> to <code class="text-emerald-300">en</code>, <code class="text-emerald-300">ku</code> or <code class="text-emerald-300">both</code> to force a single language or show a Kurdish/English switch; leave it out (or set <code class="text-emerald-300">auto</code>) and the quiz uses whichever languages the content provides. Text may be Kurdish, English, or both: fill the base key for Kurdish and the <code class="text-emerald-300">_en</code> key for English.
+      Format: title, subtitle and a list of questions. Set <code class="text-emerald-300">meta.language</code> to <code class="text-emerald-300">en</code>, <code class="text-emerald-300">ku</code> or <code class="text-emerald-300">both</code> to force a single language or show a Kurdish/English switch; leave it out (or set <code class="text-emerald-300">auto</code>) and the quiz uses whichever languages the content provides. Text may be Kurdish, English, or both: fill the base key for Kurdish and the <code class="text-emerald-300">_en</code> key for English. Add <code class="text-emerald-300">meta.after_test</code> / <code class="text-emerald-300">meta.after_test_en</code> for a message shown on the results screen after the quiz is finished.
     </div>
 
     <textarea id="json-input" spellcheck="false" rows="16"
@@ -111,6 +114,7 @@ textarea{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
         <h2 id="results-title" class="text-3xl font-bold text-emerald-400 mb-2"></h2>
         <p id="score-display" class="text-4xl font-extrabold text-white mb-4"></p>
         <div id="category-scores" class="text-slate-300 mb-5 space-y-1"></div>
+        <div id="after-test" class="hidden text-start bg-slate-900/50 border border-slate-700 rounded-xl p-4 mb-5 text-slate-200 text-sm sm:text-base leading-relaxed space-y-2"></div>
         <button type="button" id="restart-btn" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2 px-6 rounded-xl text-sm"></button>
       </div>
       <h3 id="review-heading" class="text-xl font-bold mb-4 text-slate-200"></h3>
@@ -274,6 +278,7 @@ function applyLangMode(mode) {
     quiz.title = quiz.titleBoth;
     quiz.subtitle = quiz.subtitleBoth;
     quiz.intro = quiz.introBoth;
+    quiz.afterTest = quiz.afterTestBoth;
     for (const q of questions) {
       q.category = q.categoryBoth; q.question = q.questionBoth;
       q.explanation = q.explanationBoth;
@@ -283,6 +288,7 @@ function applyLangMode(mode) {
     quiz.title = singleOf(quiz.titleBoth, mode);
     quiz.subtitle = singleOf(quiz.subtitleBoth, mode);
     quiz.intro = quiz.introBoth.map(p => singleOf(p, mode));
+    quiz.afterTest = singleOf(quiz.afterTestBoth, mode);
     for (const q of questions) {
       q.category = singleOf(q.categoryBoth, mode);
       q.question = singleOf(q.questionBoth, mode);
@@ -372,6 +378,7 @@ function normalizeQuiz(raw) {
     titleBoth: pair(meta.title, meta.title_en),
     subtitleBoth: pair(meta.subtitle, meta.subtitle_en),
     introBoth: introPairs,
+    afterTestBoth: pair(meta.after_test, meta.after_test_en),
     langMode: readLangMode(meta)
   };
 }
@@ -522,10 +529,26 @@ function startQuiz() {
   loadQuestion();
 }
 
+function renderAfterTest() {
+  const box = $("after-test");
+  const text = quiz ? pick(quiz.afterTest) : "";
+  box.replaceChildren();
+  box.classList.toggle("hidden", !text);
+  if (!text) return;
+  box.dir = currentLang === "en" ? "ltr" : "rtl";
+  for (const line of text.split("\n")) {
+    if (!safeText(line)) continue;
+    const p = document.createElement("p");
+    p.textContent = line;
+    box.appendChild(p);
+  }
+}
+
 function showResults() {
   quizScreen.classList.add("hidden");
   resultsScreen.classList.remove("hidden");
   reviewContainer.replaceChildren();
+  renderAfterTest();
 
   let score = 0;
   const scoresByCategory = {};
@@ -680,6 +703,7 @@ function setQuizLanguage(lang) {
   $("results-title").textContent = t().resultsTitle;
   $("review-heading").textContent = t().reviewHeading;
   $("restart-btn").textContent = t().restart;
+  renderAfterTest();
   if (quiz && !startScreen.classList.contains("hidden")) renderStartScreen();
   if (quiz && !quizScreen.classList.contains("hidden")) loadQuestion();
   if (quiz && !resultsScreen.classList.contains("hidden")) {
@@ -717,7 +741,9 @@ const TEMPLATE_JSON = String.raw`{
     "title": "تاقیکردنەوەی نموونە",
     "title_en": "Sample Quiz",
     "subtitle": "تاقیکردنەوەیەکی نموونە بۆ نیشاندانی شێوازی JSON",
-    "subtitle_en": "A sample quiz that shows the JSON format"
+    "subtitle_en": "A sample quiz that shows the JSON format",
+    "after_test": "سوپاس بۆ بەشداریکردنت!",
+    "after_test_en": "Thanks for taking the quiz!"
   },
   "questions": [
     {
@@ -825,6 +851,7 @@ function buildStandaloneHtml() {
     title: quiz.title,
     subtitle: quiz.subtitle,
     intro: quiz.intro,
+    afterTest: quiz.afterTest,
     questions: questions.map(q => ({
       category: q.category,
       question: q.question,
@@ -898,6 +925,7 @@ ${topbar}
 <h2 id="results-title" class="text-3xl font-bold text-emerald-400 mb-2"></h2>
 <p id="score-display" class="text-4xl font-extrabold text-white mb-4"></p>
 <div id="category-scores" class="text-slate-300 mb-5 space-y-1"></div>
+<div id="after-test" class="hidden text-start bg-slate-900/50 border border-slate-700 rounded-xl p-4 mb-5 text-slate-200 text-sm sm:text-base leading-relaxed space-y-2"></div>
 <button type="button" id="restart-btn" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2 px-6 rounded-xl text-sm"></button>
 </div>
 <h3 id="review-heading" class="text-xl font-bold mb-4 text-slate-200"></h3>
@@ -944,11 +972,12 @@ function createQuiz(){ const out=[]; for(const c of categoryOrder){ for(const q 
 function optionAt(q,i){ return currentLang==="en" ? (q.optionsEn[i]||q.optionsKu[i]||"") : (q.optionsKu[i]||q.optionsEn[i]||""); }
 function setLang(lang){ currentLang=lang; document.documentElement.lang=lang; document.documentElement.dir=lang==="en"?"ltr":"rtl"; const b=$("lang-btn"); if(b) b.textContent = lang==="en" ? "🌐 کوردی" : "🌐 English"; const hl=$("home-link"); if(hl) hl.textContent=t().homeLabel; const sl=$("start-list"); if(sl){ sl.dir=lang==="en"?"ltr":"rtl"; sl.style.textAlign=lang==="en"?"left":"right"; } $("quiz-title").textContent=pick(DATA.title)||"Quiz"; const sub=pick(DATA.subtitle); $("quiz-subtitle").textContent=sub; $("quiz-subtitle").className=sub?"text-slate-400 text-sm sm:text-base":"hidden"; $("results-title").textContent=t().resultsTitle; $("review-heading").textContent=t().reviewHeading; $("restart-btn").textContent=t().restart; if(!$("start-screen").classList.contains("hidden")) renderStart(); if(!$("quiz-screen").classList.contains("hidden")) loadQuestion(); if(!$("results-screen").classList.contains("hidden")) showResults(); }
 function renderStart(){ $("start-count").textContent=t().startCount(questions.length); const list=$("start-list"); list.replaceChildren(); for(const key of categoryOrder){ const n=questions.filter(q=>catKey(q)===key).length; const li=document.createElement("li"); li.textContent=t().startCategory(n,catLabel(key)); list.appendChild(li); } for(const line of DATA.intro){ const text=pick(line); if(!text) continue; const li=document.createElement("li"); li.textContent="• "+text; list.appendChild(li); } $("start-btn").textContent=t().startBtn; }
+function renderAfterTest(){ const box=$("after-test"); const text=pick(DATA.afterTest); box.replaceChildren(); box.classList.toggle("hidden",!text); if(!text) return; box.dir=currentLang==="en"?"ltr":"rtl"; for(const line of text.split("\\n")){ if(!safeText(line)) continue; const p=document.createElement("p"); p.textContent=line; box.appendChild(p); } }
 function loadQuestion(){ const q=quizQuestions[currentQuestionIndex]; $("question-counter").textContent=t().counter(currentQuestionIndex+1,quizQuestions.length); $("progress-bar").style.width=(((currentQuestionIndex+1)/quizQuestions.length)*100)+"%"; const color=categoryColor.get(q.categoryKey)||COLORS[1]; const badge=$("category-badge"); badge.textContent=pick(q.category); badge.className=color.bg+" "+color.text+" px-3 py-1 rounded-full text-xs border "+color.border; $("question-text").textContent=td(currentQuestionIndex+1)+". "+pick(q.question); const c=$("options-container"); c.replaceChildren(); q.optionsKu.forEach((_,i)=>{ const b=document.createElement("button"); const sel=userAnswers[currentQuestionIndex]===i; b.type="button"; b.className="w-full p-4 rounded-xl border transition duration-200 font-medium text-start "+(sel?"bg-emerald-700 border-emerald-400 text-white":"bg-slate-700/60 hover:bg-slate-700 border-slate-600 text-slate-200"); b.textContent=String.fromCharCode(65+i)+") "+optionAt(q,i); b.addEventListener("click",()=>selectOption(i)); c.appendChild(b); }); const p=$("prev-btn"), n=$("next-btn"); p.textContent=t().prev; n.textContent=currentQuestionIndex===quizQuestions.length-1?t().finish:t().next; p.classList.toggle("hidden",currentQuestionIndex===0); n.classList.toggle("hidden",userAnswers[currentQuestionIndex]===null); }
 function selectOption(i){ userAnswers[currentQuestionIndex]=i; loadQuestion(); }
 function nextQuestion(){ if(userAnswers[currentQuestionIndex]===null){ alert(t().mustSelect); return; } if(currentQuestionIndex<quizQuestions.length-1){ currentQuestionIndex++; loadQuestion(); } else showResults(); }
 function previousQuestion(){ if(currentQuestionIndex>0){ currentQuestionIndex--; loadQuestion(); } }
-function showResults(){ $("quiz-screen").classList.add("hidden"); $("results-screen").classList.remove("hidden"); const rc=$("review-container"); rc.replaceChildren(); let score=0; const byCat={}; quizQuestions.forEach((q,i)=>{ if(!byCat[q.categoryKey]) byCat[q.categoryKey]={correct:0,total:0}; byCat[q.categoryKey].total++; const ua=userAnswers[i]; const ok=ua===q.correct; if(ok){ score++; byCat[q.categoryKey].correct++; } const card=document.createElement("div"); card.className="p-5 rounded-xl border "+(ok?"bg-emerald-950/30 border-emerald-800/60":"bg-rose-950/30 border-rose-800/60"); const top=document.createElement("div"); top.className="flex items-start justify-between gap-3 mb-3"; const st=document.createElement("span"); st.className="text-xs font-bold px-2.5 py-1 rounded-full "+(ok?"bg-emerald-800 text-emerald-200":"bg-rose-800 text-rose-200"); st.textContent=ok?t().correct:t().wrong; const num=document.createElement("span"); num.className="text-xs text-slate-400"; num.textContent=t().questionShort(i+1); top.append(st,num); const cat=document.createElement("p"); cat.className="text-xs text-slate-400 mb-2"; cat.textContent=pick(q.category); const qq=document.createElement("h4"); qq.className="font-semibold text-slate-100 mb-3"; qq.textContent=td(i+1)+". "+pick(q.question); const ya=document.createElement("p"); ya.className="text-sm mb-2 text-slate-300"; const yl=document.createElement("strong"); yl.textContent=t().yourAnswer; const yt=document.createElement("span"); yt.className=ok?"text-emerald-400 font-bold":"text-rose-400 font-bold"; yt.textContent=ua!==null?String.fromCharCode(65+ua)+") "+optionAt(q,ua):t().noAnswer; ya.append(yl,yt); card.append(top,cat,qq,ya); if(!ok){ const ca=document.createElement("p"); ca.className="text-sm mb-2 text-slate-300"; const cl=document.createElement("strong"); cl.textContent=t().correctAnswer; const av=document.createElement("span"); av.className="text-emerald-400 font-bold"; av.textContent=String.fromCharCode(65+q.correct)+") "+optionAt(q,q.correct); ca.append(cl,av); card.appendChild(ca); } const ex=document.createElement("div"); ex.className="mt-3 pt-3 border-t border-slate-700/60 text-xs sm:text-sm text-slate-300 bg-slate-900/40 p-3 rounded-lg"; const el=document.createElement("strong"); el.textContent=t().explanation; ex.append(el,document.createTextNode(pick(q.explanation))); card.appendChild(ex); rc.appendChild(card); }); $("score-display").textContent=t().score(score,quizQuestions.length); const cs=$("category-scores"); cs.replaceChildren(); for(const [k,r] of Object.entries(byCat)){ const p=document.createElement("p"); p.textContent=t().categoryScore(catLabel(k),r.correct,r.total); cs.appendChild(p); } }
+function showResults(){ $("quiz-screen").classList.add("hidden"); $("results-screen").classList.remove("hidden"); const rc=$("review-container"); rc.replaceChildren(); let score=0; const byCat={}; quizQuestions.forEach((q,i)=>{ if(!byCat[q.categoryKey]) byCat[q.categoryKey]={correct:0,total:0}; byCat[q.categoryKey].total++; const ua=userAnswers[i]; const ok=ua===q.correct; if(ok){ score++; byCat[q.categoryKey].correct++; } const card=document.createElement("div"); card.className="p-5 rounded-xl border "+(ok?"bg-emerald-950/30 border-emerald-800/60":"bg-rose-950/30 border-rose-800/60"); const top=document.createElement("div"); top.className="flex items-start justify-between gap-3 mb-3"; const st=document.createElement("span"); st.className="text-xs font-bold px-2.5 py-1 rounded-full "+(ok?"bg-emerald-800 text-emerald-200":"bg-rose-800 text-rose-200"); st.textContent=ok?t().correct:t().wrong; const num=document.createElement("span"); num.className="text-xs text-slate-400"; num.textContent=t().questionShort(i+1); top.append(st,num); const cat=document.createElement("p"); cat.className="text-xs text-slate-400 mb-2"; cat.textContent=pick(q.category); const qq=document.createElement("h4"); qq.className="font-semibold text-slate-100 mb-3"; qq.textContent=td(i+1)+". "+pick(q.question); const ya=document.createElement("p"); ya.className="text-sm mb-2 text-slate-300"; const yl=document.createElement("strong"); yl.textContent=t().yourAnswer; const yt=document.createElement("span"); yt.className=ok?"text-emerald-400 font-bold":"text-rose-400 font-bold"; yt.textContent=ua!==null?String.fromCharCode(65+ua)+") "+optionAt(q,ua):t().noAnswer; ya.append(yl,yt); card.append(top,cat,qq,ya); if(!ok){ const ca=document.createElement("p"); ca.className="text-sm mb-2 text-slate-300"; const cl=document.createElement("strong"); cl.textContent=t().correctAnswer; const av=document.createElement("span"); av.className="text-emerald-400 font-bold"; av.textContent=String.fromCharCode(65+q.correct)+") "+optionAt(q,q.correct); ca.append(cl,av); card.appendChild(ca); } const ex=document.createElement("div"); ex.className="mt-3 pt-3 border-t border-slate-700/60 text-xs sm:text-sm text-slate-300 bg-slate-900/40 p-3 rounded-lg"; const el=document.createElement("strong"); el.textContent=t().explanation; ex.append(el,document.createTextNode(pick(q.explanation))); card.appendChild(ex); rc.appendChild(card); }); $("score-display").textContent=t().score(score,quizQuestions.length); const cs=$("category-scores"); cs.replaceChildren(); for(const [k,r] of Object.entries(byCat)){ const p=document.createElement("p"); p.textContent=t().categoryScore(catLabel(k),r.correct,r.total); cs.appendChild(p); } renderAfterTest(); }
 function restart(){ $("results-screen").classList.add("hidden"); $("start-screen").classList.remove("hidden"); renderStart(); }
 $("start-btn").addEventListener("click",()=>{ quizQuestions=createQuiz(); userAnswers=new Array(quizQuestions.length).fill(null); currentQuestionIndex=0; $("start-screen").classList.add("hidden"); $("results-screen").classList.add("hidden"); $("quiz-screen").classList.remove("hidden"); loadQuestion(); });
 $("next-btn").addEventListener("click",nextQuestion);

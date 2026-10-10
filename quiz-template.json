@@ -4,18 +4,21 @@
     "Rules:",
     "1. meta.language: which language(s) to use — \"en\", \"ku\", \"both\", or \"auto\" (default). \"auto\" keeps both languages when the input carries them, otherwise the single language present.",
     "2. meta.title / meta.title_en: quiz name shown at the top. meta.subtitle / meta.subtitle_en: optional one line under it.",
-    "3. meta.intro / meta.intro_en: optional list of extra bullet lines for the start screen (category counts are added automatically). If omitted, two default bullets are used.",
-    "4. questions: array. Each item has category/category_en, question/question_en, options/options_en, correct (0-based index), explanation/explanation_en.",
-    "5. options and options_en must be the same length and same order; 'correct' points into that order.",
-    "6. Base keys are Kurdish; the '_en' keys are English. You may fill only one language; the other falls back automatically. With meta.language \"both\" (or \"auto\" when both languages are present) the quiz shows a Kurdish/English switch.",
-    "7. Remove this '_instructions' key when you are done (optional but cleaner)."
+    "3. meta.after_test / meta.after_test_en: optional message shown on the results screen after the quiz is finished. Newlines are preserved.",
+    "4. meta.intro / meta.intro_en: optional list of extra bullet lines for the start screen (category counts are added automatically). If omitted, two default bullets are used.",
+    "5. questions: array. Each item has category/category_en, question/question_en, options/options_en, correct (0-based index), explanation/explanation_en.",
+    "6. options and options_en must be the same length and same order; 'correct' points into that order.",
+    "7. Base keys are Kurdish; the '_en' keys are English. You may fill only one language; the other falls back automatically. With meta.language \"both\" (or \"auto\" when both languages are present) the quiz shows a Kurdish/English switch.",
+    "8. Remove this '_instructions' key when you are done (optional but cleaner)."
   ],
   "meta": {
     "language": "auto",
     "title": "تاقیکردنەوەی نموونە",
     "title_en": "Sample Quiz",
     "subtitle": "تاقیکردنەوەیەکی نموونە بۆ نیشاندانی شێوازی JSON",
-    "subtitle_en": "A sample quiz that shows the JSON format"
+    "subtitle_en": "A sample quiz that shows the JSON format",
+    "after_test": "سوپاس بۆ بەشداریکردنت!",
+    "after_test_en": "Thanks for taking the quiz!"
   },
   "questions": [
     {
