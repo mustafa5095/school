@@ -1,613 +1,595 @@
 <!DOCTYPE html>
 <html lang="ku" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تاقیکردنەوەی گشتی (ئایین و ئەدەبی عەرەبی)</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Vazirmatn', sans-serif; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تاقیکردنەوەی گشتی (ئایین و ئەدەبی عەرەبی)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+body{font-family:'Vazirmatn',sans-serif}
+button:focus-visible{outline:2px solid #34d399;outline-offset:3px}
+</style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col items-center justify-center p-4">
+<div class="max-w-3xl w-full bg-slate-800 rounded-2xl shadow-2xl p-6 sm:p-8 border border-slate-700">
+<header class="text-center mb-8">
+<h1 class="text-2xl sm:text-3xl font-bold text-emerald-400 mb-2">تاقیکردنەوەی گشتیی کتێب</h1>
+<p class="text-slate-400 text-sm sm:text-base">بەشی ئایینی پیرۆز و ئەدەبی عەرەبی (وەڵامەکان لە کۆتاییدا نیشان دەدرێن)</p>
+</header>
 
-    <div class="max-w-3xl w-full bg-slate-800 rounded-2xl shadow-2xl p-6 sm:p-8 border border-slate-700">
-        <!-- Header -->
-        <div class="text-center mb-8">
-            <h1 class="text-2xl sm:text-3xl font-bold text-emerald-400 mb-2">تاقیکردنەوەی گشتیی کتێب</h1>
-            <p class="text-slate-400 text-sm sm:text-base">بەشی ئایینی پیرۆز و ئەدەبی عەرەبی (وەڵامەکان لە کۆتاییدا نیشان دەدرێن)</p>
-        </div>
+<div id="start-screen" class="text-center py-8">
+<div class="mb-6 bg-slate-700/50 p-6 rounded-xl border border-slate-600 inline-block">
+<p class="text-lg font-medium mb-2">ئەم تاقیکردنەوەیە پێکدێت لە ٣٥ پرسیار:</p>
+<ul class="text-slate-300 text-sm space-y-1 text-right inline-block">
+<li>• ١٥ پرسیار لە ئایینی پیرۆز</li>
+<li>• ٢٠ پرسیار لە ئەدەبی عەرەبی</li>
+<li>• ڕوونکردنەوەی وەڵامە ڕاست و هەڵەکان لە کۆتاییدا</li>
+<li>• پرسیار و وەڵامەکان لە هەر جارێکدا دەگۆڕدرێن</li>
+</ul>
+</div>
+<div><button onclick="startQuiz()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition text-lg">دەستپێکردنی تاقیکردنەوە</button></div>
+</div>
 
-        <!-- Start Screen -->
-        <div id="start-screen" class="text-center py-8">
-            <div class="mb-6 bg-slate-700/50 p-6 rounded-xl border border-slate-600 inline-block">
-                <p class="text-lg font-medium mb-2">ئەم تاقیکردنەوەیە پێکدێت لە ٣٥ پرسیار:</p>
-                <ul class="text-slate-300 text-sm space-y-1 text-right inline-block">
-                    <li>• ١٥ پرسیار لە ئایینی پیرۆز</li>
-                    <li>• ٢٠ پرسیار لە ئەدەبی عەرەبی</li>
-                    <li>• ڕوونکردنەوەی تواو بۆ وەڵامە ڕاست و هەڵەکان لە کۆتاییدا</li>
-                </ul>
-            </div>
-            <div>
-                <button onclick="startQuiz()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition duration-200 text-lg">
-                    دەستپێکردنی تاقیکردنەوە
-                </button>
-            </div>
-        </div>
+<div id="quiz-screen" class="hidden">
+<div class="flex justify-between items-center mb-4 text-sm text-slate-400 font-medium gap-3">
+<span id="question-counter">پرسیاری ١ لە ٣٥</span>
+<span id="category-badge" class="bg-emerald-900/60 text-emerald-300 px-3 py-1 rounded-full text-xs border border-emerald-700">ئایینی پیرۆز</span>
+</div>
 
-        <!-- Quiz Screen -->
-        <div id="quiz-screen" class="hidden">
-            <div class="flex justify-between items-center mb-6 text-sm text-slate-400 font-medium">
-                <span id="question-counter">پرسیاری ١ لە ٣٥</span>
-                <span id="category-badge" class="bg-emerald-900/60 text-emerald-300 px-3 py-1 rounded-full text-xs border border-emerald-700">ئایینی پیرۆز</span>
-            </div>
+<!-- Progress Bar -->
+<div class="w-full bg-slate-700/80 rounded-full h-2.5 mb-6 overflow-hidden border border-slate-600/50">
+<div id="progress-bar" class="bg-emerald-500 h-full transition-all duration-300 ease-out" style="width: 0%"></div>
+</div>
 
-            <div class="mb-6">
-                <h2 id="question-text" class="text-lg sm:text-xl font-semibold text-slate-100 leading-relaxed"></h2>
-            </div>
+<div class="mb-6"><h2 id="question-text" class="text-lg sm:text-xl font-semibold text-slate-100 leading-relaxed"></h2></div>
+<div id="options-container" class="space-y-3 mb-6"></div>
+<div class="flex justify-between items-center gap-3 mt-6 pt-4 border-t border-slate-700">
+<button id="prev-btn" onclick="previousQuestion()" class="bg-slate-700 hover:bg-slate-600 text-white font-semibold py-2 px-5 rounded-xl hidden">پێشوو</button>
+<button id="next-btn" onclick="nextQuestion()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2 px-6 rounded-xl hidden">پرسیاری داهاتوو</button>
+</div>
+</div>
 
-            <div id="options-container" class="space-y-3 mb-6"></div>
+<div id="results-screen" class="hidden">
+<div class="text-center py-6 mb-6 border-b border-slate-700">
+<h2 class="text-3xl font-bold text-emerald-400 mb-2">ئەنجامی تاقیکردنەوە</h2>
+<p id="score-display" class="text-4xl font-extrabold text-white mb-4"></p>
+<div id="category-scores" class="text-slate-300 mb-5 space-y-1"></div>
+<button onclick="restartQuiz()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2 px-6 rounded-xl text-sm">دووبارە ئەنجامدانەوە</button>
+</div>
+<h3 class="text-xl font-bold mb-4 text-slate-200">پێداچوونەوە و ڕوونکردنەوەی پرسیارەکان:</h3>
+<div id="review-container" class="space-y-6 max-h-[60vh] overflow-y-auto pl-2"></div>
+</div>
+</div>
 
-            <div class="flex justify-end mt-6 pt-4 border-t border-slate-700">
-                <button id="next-btn" onclick="nextQuestion()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2 px-6 rounded-xl transition duration-200 hidden">
-                    پرسیاری داهاتوو
-                </button>
-            </div>
-        </div>
+<script>
+"use strict";
 
-        <!-- Results Screen -->
-        <div id="results-screen" class="hidden">
-            <div class="text-center py-6 mb-6 border-b border-slate-700">
-                <h2 class="text-3xl font-bold text-emerald-400 mb-2">ئەنجامی تاقیکردنەوە</h2>
-                <p id="score-display" class="text-4xl font-extrabold text-white mb-4"></p>
-                <button onclick="restartQuiz()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2 px-6 rounded-xl transition duration-200 text-sm">
-                    دووبارە ئەنجامدانەوە
-                </button>
-            </div>
+/*
+ * Questions have their hardcoded numbering removed so they display dynamically.
+ * Every attempt shuffles questions within each category and shuffles choices.
+ */
+const questions = [
+{
+category:"ئایینی پیرۆز",
+question:"باوەڕبوون بە خودا مانای چییە؟",
+options:["باوەڕ بە مرۆڤ","باوەڕ بە الله کە خودای هەموو شتێکە","باوەڕ بە سروشت","باوەڕ بە پێغەمبەران"],
+correct:1,
+explanation:"باوەڕی ڕاستەقینە بە خودا ئەوەیە باوەڕت هەبێت ئەو پەروەردگار و دروستکەری هەموو شتێکە. بژاردەکانی تر دروستکراون و شایستەی پەرستن نین."
+},
+{
+category:"ئایینی پیرۆز",
+question:"یەکتاپەرستی چییە؟",
+options:["پەرستنی چەند خودا","پەرستنی مرۆڤ","پەرستنی تەنها خودا","وازهێنان لە پەرستن"],
+correct:2,
+explanation:"یەکتاپەرستی بریتییە لە تاکپەرستن و تەنها تەرخانکردنی پەرستن بۆ خودای یەکتا."
+},
+{
+category:"ئایینی پیرۆز",
+question:"مرۆڤ و جەنۆک بۆ چی دروست کراون؟",
+options:["بۆ سامان","بۆ پەرستنی خودا","بۆ دەسەڵات","بۆ ژیانی دنیا"],
+correct:1,
+explanation:"بەپێی دەقە ئایینییەکان، ئامانجی سەرەکی دروستکردنی مرۆڤ و جەنۆک پەرستنی خودایە."
+},
+{
+category:"ئایینی پیرۆز",
+question:"بانگەوازی سەرەتایی هەموو پێغەمبەران چی بوو؟",
+options:["سامان","یەکتاپەرستی","جەنگ","زانست"],
+correct:1,
+explanation:"هەموو پێغەمبەرێک بانگەوازی پەرستنی تەنها خودای یەکتای کردووە."
+},
+{
+category:"ئایینی پیرۆز",
+question:"پێغەمبەر محمد (د.خ) چەند ساڵ لە مەککە بانگەوازی کرد؟",
+options:["٥ ساڵ","١٠ ساڵ","١٣ ساڵ","٢٠ ساڵ"],
+correct:2,
+explanation:"پێغەمبەر (د.خ) ١٣ ساڵ لە مەککە بانگەوازی کرد پێش کۆچکردن بۆ مەدینە."
+},
+{
+category:"ئایینی پیرۆز",
+question:"یەکتاپەرستی دەبێتە هۆی چی؟",
+options:["ترس","خۆشەختی و لێخۆشبوون","دوورکەوتنەوە","کۆیلایەتی"],
+correct:1,
+explanation:"یەکتاپەرستی بە باوەڕی ئایینی دەبێتە هۆی بەختەوەری دنیا و دواڕۆژ و لێخۆشبوونی خودا."
+},
+{
+category:"ئایینی پیرۆز",
+question:"یەکتاپەرستی مرۆڤ لە چی ڕزگار دەکات؟",
+options:["زانست","سامان","کۆیلایەتی","کار"],
+correct:2,
+explanation:"یەکتاپەرستی مرۆڤ لە کۆیلایەتی بۆ غەیری خودا ڕزگار دەکات و تەنها دەیبەستێتەوە بە خالقەوە."
+},
+{
+category:"ئایینی پیرۆز",
+question:"یەکتاپەرستی چ کەسایەتییەک دروست دەکات؟",
+options:["هاوسەنگ","لاواز","دوودڵ","ترساو"],
+correct:0,
+explanation:"لە ڕوونکردنەوەی ئەم بابەتەدا، یەکتاپەرستی کەسایەتییەکی هاوسەنگ دروست دەکات."
+},
+{
+category:"ئایینی پیرۆز",
+question:"یەکتاپەرستی چی بۆ دەروون دروست دەکات؟",
+options:["ئارامی","ترس","دوودڵی","بێ‌ئومێدی"],
+correct:0,
+explanation:"باوەڕی ڕاستەقینە دەروون ئارام دەکاتەوە، چونکە مرۆڤ پشت بە پەروەردگار دەبەستێت."
+},
+{
+category:"ئایینی پیرۆز",
+question:"یەکتاپەرستی چۆن ئیرادە بەهێز دەکات؟",
+options:["پشتبەستن بە خەڵک","پشتبەستن بە خودا","دوورکەوتنەوە","پشتبەستن بە سامان"],
+correct:1,
+explanation:"پشتبەستن بە خودا ئیرادەی مرۆڤ بەهێز دەکات لە بەرامبەر سەختییەکاندا."
+},
+{
+category:"ئایینی پیرۆز",
+question:"یەکتاپەرستی چۆن مافەکان دەپارێزێت؟",
+options:["جیاوازی","زۆرداری","یەکسانی","کۆیلایەتی"],
+correct:2,
+explanation:"یەکسانی لەبەردەم یاسادا یەکێکە لەو بنەمایانەی کە مافەکان دەپارێزێت."
+},
+{
+category:"ئایینی پیرۆز",
+question:"بۆچی محمد (د.خ) کۆتا پێغەمبەرە؟",
+options:["پەیامەکەی تایبەتە","پەیامەکەی نەماوە","پەیامەکەی تەواو و پارێزراوە","پێغەمبەری دیکە هات"],
+correct:2,
+explanation:"بەپێی باوەڕی ئیسلام، پەیامی قورئان و سوننەت تەواوە و پێویستی بە پێغەمبەری تر نییە."
+},
+{
+category:"ئایینی پیرۆز",
+question:"کامەیان هۆکارێکی ناردنی پێغەمبەرانی پێشوو بوو؟",
+options:["نەمانی پەیام","زانستی زۆر","باوەڕداری خەڵک","پارێزراوی پەیام"],
+correct:0,
+explanation:"لە ڕوونکردنەوەی ئایینیدا، پێغەمبەرانی پێشوو دەنێردران چونکە پەیامەکانی پێشوو گۆڕدرابوون یان لەناوچووبوون."
+},
+{
+category:"ئایینی پیرۆز",
+question:"پەیامی محمد (د.خ) چۆنە؟",
+options:["ناتەواوە","تایبەتە","تەواو و پارێزراوە","کاتییە"],
+correct:2,
+explanation:"بەپێی باوەڕی ئیسلام، پەیامی ئیسلام کۆتا پەیامە و پارێزراوە."
+},
+{
+category:"ئایینی پیرۆز",
+question:"«خاتَمُ النَّبِييِّنَ» واتە چی؟",
+options:["یەکەم پێغەمبەر","پێغەمبەری گەلێک","کۆتا پێغەمبەر","پێغەمبەری دووەم"],
+correct:2,
+explanation:"«خاتم النبيين» واتە کۆتا پێغەمبەر."
+},
+{
+category:"ئەدەبی عەرەبی",
+question:"مَا الْفِكْرَةُ الرَّئِيسَةُ لِقَصِيدَةِ «مُدُنٌ مُتَعَانِقَةٌ»؟",
+options:["الدَّعْوَةُ إِلَى الْحَرْبِ","الدَّعْوَةُ إِلَى التَّعَاوُنِ وَالدِّيمُقْرَاطِيَّةِ","وَصْفُ الطَّبِيعَةِ","وَصْفُ الْمَدِينَةِ"],
+correct:1,
+explanation:"بیرۆکەی سەرەکی هاندانی هاوکاری مرۆیی و بڵاوکردنەوەی دیموکراسییە."
+},
+{
+category:"ئەدەبی عەرەبی",
+question:"مَا مَعْنَى كَلِمَةِ «أَسْمَى» فِي السِّيَاقِ؟",
+options:["أَقَلُّ رُقِيّاً","أَكْثَرُ رُقِيّاً وَسُمُوّاً","أَسْرَعُ","أَصْغَرُ"],
+correct:1,
+explanation:"وشەی «أسمى» واتە بەرزتر و خاوەن ڕوتبەی بەرزتر."
+},
+{
+category:"ئەدەبی عەرەبی",
+question:"مَا الْمَعْنَى الْبَعِيدُ الْمَقْصُودُ مِنْ «طَلَعَتْ عَلَيْهِ شَمْسٌ»؟",
+options:["شُرُوقُ الشَّمْسِ","جَعْلُ الْجِنْسِ الْبَشَرِيِّ فِي أَرْقَى مَرَاتِبِ السُّمُوِّ","سُقُوطُ الْمَطَرِ","ظُهُورُ الْقَمَرِ"],
+correct:1,
+explanation:"مانای مەجازی ڕستەکە گەیاندنی مرۆڤایەتییە بۆ بەرزترین ئاستی ڕوتبە و سەروەری."
+},
+{
+category:"ئەدەبی عەرەبی",
+question:"لِمَاذَا تَكَرَّرَتْ شِبْهُ الْجُمْلَةِ «بِحُبِّ الرُّفْقَةِ»؟",
+options:["لِلدَّعْوَةِ إِلَى الْحَرْبِ","لِلتَّعْبِيرِ عَنْ رَغْبَةِ الشَّاعِرِ فِي سِيَادَةِ الرُّفْقَةِ","لِوَصْفِ الطَّبِيعَةِ","لِوَصْفِ الْمَدِينَةِ"],
+correct:1,
+explanation:"دووبارەکردنەوەکە بۆ جەختکردنەوە لەسەر خۆشەویستی و هاوڕێیەتی و پێکەوەژیانە."
+},
+{
+category:"ئەدەبی عەرەبی",
+question:"مَا الْقِيَمُ الْإِنْسَانِيَّةُ الَّتِي عَبَّرَ عَنْهَا الشَّاعِرُ؟",
+options:["الْحَرْبُ وَالْقَتْلُ","السُّمُوُّ وَالْوِدَادُ وَالتَّعَاضُدُ","الْفَقْرُ وَالْجُوعُ","الْخَوْفُ وَالْحُزْنُ"],
+correct:1,
+explanation:"بەرزایی، خۆشەویستی و هاوکاری ئەو بەهایە مرۆییانەن کە شاعیر باسیان دەکات."
+},
+{
+category:"ئەدەبی عەرەبی",
+question:"مَا الْفِكْرَةُ الرَّئِيسَةُ فِي الْقِسْمِ الثَّانِي مِنَ الْقَصِيدَةِ؟",
+options:["تَحْقِيقُ الدِّيمُقْرَاطِيَّةِ","وَصْفُ النَّهْرِ","وَصْفُ الْحَرْبِ","الدَّعْوَةُ إِلَى السَّفَرِ"],
+correct:0,
+explanation:"لە بەشی دووەمی شیعرەکەدا گرنگی بە بەدیهێنانی بنەماکانی دیموکراسی دەدرێت."
+},
+{
+category:"ئەدەبی عەرەبی",
+question:"مَنْ هِيَ الْمَرْأَةُ الَّتِي قَصَدَهَا الشَّاعِرُ؟",
+options:["أُمُّهُ فَقَطْ","زَوْجَتُهُ فَقَطْ","قَدْ تَكُونُ زَوْجَتَهُ أَوْ رَمْزاً لِلدِّيمُقْرَاطِيَّةِ","أُخْتُهُ"],
+correct:2,
+explanation:"لە ڕووی ئەدەبییەوە، مەبەست لە ژن لەو سیاقەدا دەکرێت هاوسەر بێت یان هێمایەک بۆ ئازادی و دیموکراسی."
+},
+{
+category:"ئەدەبی عەرەبی",
+question:"مَا الدِّيمُقْرَاطِيَّةُ؟",
+options:["شَكْلٌ مِنْ أَشْكَالِ الْحُكْمِ","نَوْعٌ مِنَ التِّجَارَةِ","نَوْعٌ مِنَ الرِّيَاضَةِ","طَرِيقَةٌ لِلزِّرَاعَةِ"],
+correct:0,
+explanation:"دیموکراسی شێوازێکی حوکمڕانییە کە تێیدا گەل بەشدارە لە بڕیاردا."
+},
+{
+category:"ئەدەبی عەرەبی",
+question:"مِنْ قِيَمِ الدِّيمُقْرَاطِيَّةِ:",
+options:["الظُّلْمُ","الْمُسَاوَاةُ وَحُرِّيَّةُ التَّعْبِيرِ","الْحَرْبُ","التَّمْيِيزُ"],
+correct:1,
+explanation:"یەکسانی و ئازادی ڕادەربڕین دوو لە بەها گرنگەکانی دیموکراسیین."
+},
+{
+category:"ئەدەبی عەرەبی",
+question:"مَنْ هُوَ مُحْيِي الدِّينِ زَنْكَنَةُ؟",
+options:["شَاعِرٌ فَرَنْسِيٌّ","كَاتِبٌ مَسْرَحِيٌّ مِنَ الْعِرَاقِ","رِيَاضِيٌّ","مُهَنْدِسٌ"],
+correct:1,
+explanation:"محیی‌الدین زنگنە نووسەر و شانۆنامەنوسێکی عێراقی بوو."
+},
+{
+category:"ئەدەبی عەرەبی",
+question:"أَيْنَ وُلِدَ مُحْيِي الدِّينِ زَنْكَنَةُ؟",
+options:["بَغْدَاد","الْبَصْرَة","كَرْكُوك","الْحِلَّة"],
+correct:2,
+explanation:"محیی‌الدین زنگنە لە شاری کەرکووک لەدایک بووە."
+},
+{
+category:"ئەدەبی عەرەبی",
+question:"فِي أَيِّ عَامٍ تَخَرَّجَ مِنْ جَامِعَةِ بَغْدَادَ؟",
+options:["١٩٥٢","١٩٦٢","١٩٧٢","١٩٨٢"],
+correct:1,
+explanation:"بەپێی زانیاریی ئەم پرسیارە، لە ساڵی ١٩٦٢ لە زانکۆی بەغدا دەرچووە."
+},
+{
+category:"ئەدەبی عەرەبی",
+question:"مَا مَعْنَى «نَصَبٌ»؟",
+options:["فَرَحٌ","تَعَبٌ","نَوْمٌ","سُرُورٌ"],
+correct:1,
+explanation:"وشەی «نصب» بە مانای ماندووبوون و تەعەب دێت."
+},
+{
+category:"ئەدەبی عەرەبی",
+question:"مَا مَعْنَى «تَزْخَرُ»؟",
+options:["تَجِفُّ","تَمْتَلِئُ وَتَفِيضُ","تَسْقُطُ","تَخْتَفِي"],
+correct:1,
+explanation:"«تزخر» واتە پڕ دەبێت و دەفەیضێت."
+},
+{
+category:"ئەدەبی عەرەبی",
+question:"مَا مَعْنَى «الْخَرِيرُ»؟",
+options:["صَوْتُ الرِّيَاحِ","صَوْتُ الْمِيَاهِ","صَوْتُ الطُّيُورِ","صَوْتُ النَّاسِ"],
+correct:1,
+explanation:"«الخرير» دەنگی ڕۆیشتن و تریشقەی ئاوە."
+},
+{
+category:"ئەدەبی عەرەبی",
+question:"مَا مَعْنَى «مَعَ الرَّشَقَاتِ الْأُولَى مِنْ وَهْجِ الشَّمْسِ»؟",
+options:["لَيْلاً","فَجْراً","ظُهْراً","مَسَاءً"],
+correct:1,
+explanation:"مەبەست کاتی بەیانی زوو و هەڵاتنی تیشکی یەکەمی خۆرە."
+},
+{
+category:"ئەدەبی عەرەبی",
+question:"مَا الْمَعْنَى الْمُنَاسِبُ لِكَلِمَةِ «تُغْدِقُ»؟",
+options:["تُقَلِّلُ","تُكْثِرُ","تَمْنَعُ","تَحْبِسُ"],
+correct:1,
+explanation:"«تغدق» واتە بە زۆری دەبەخشێت یان فراوان دەبەخشێت."
+},
+{
+category:"ئەدەبی عەرەبی",
+question:"مَا دَلَالَةُ تَعْبِيرِ «أَذْرُعُ النَّهْرِ»؟",
+options:["أَلْوَانُ النَّهْرِ","الْمَجَارِي الْمُتَفَرِّعَةُ مِنَ النَّهْرِ","عُمْقُ النَّهْرِ","طُولُ النَّهْرِ"],
+correct:1,
+explanation:"مەبەست لە قۆڵەکانی ڕووبار، لق و مەجارییەکانی ئاوە."
+},
+{
+category:"ئەدەبی عەرەبی",
+question:"مَا الْعَلَاقَةُ بَيْنَ الرِّجَالِ وَالنَّهْرِ؟",
+options:["عَدَاوَةٌ","عَلَاقَةُ عِشْقٍ","خَوْفٌ","إِهْمَالٌ"],
+correct:1,
+explanation:"پەیوەندی نێوان پیاوان و ڕووبار پەیوەندییەکی قووڵی خۆشەویستییە، چونکە ڕووبار سەرچاوەی ژیانیانە."
+},
+{
+category:"ئەدەبی عەرەبی",
+question:"لِمَاذَا يُحِبُّ الرِّجَالُ النَّهْرَ؟",
+options:["لِأَنَّهُمْ يَسْقُونَ مِنْ مِيَاهِهِ مَزْرُوعَاتِهِمْ","لِأَنَّهُمْ يَسْبَحُونَ فِيهِ فَقَطْ","لِأَنَّهُ بَعِيدٌ عَنْهُمْ","لِأَنَّهُمْ لَا يَعْمَلُونَ"],
+correct:0,
+explanation:"چونکە ئاوی ڕووبار سەرچاوەیەکی سەرەکییە بۆ ئاودانی کشتوکاڵ و بژێوی خەڵک."
+}
+];
 
-            <h3 class="text-xl font-bold mb-4 text-slate-200">پێداچوونەوە و ڕوونکردنەوەی پرسیارەکان:</h3>
-            <div id="review-container" class="space-y-6 max-h-[60vh] overflow-y-auto pl-2"></div>
-        </div>
-    </div>
+let quizQuestions = [];
+let currentQuestionIndex = 0;
+let userAnswers = [];
 
-    <script>
-        const questions = [
-            // Islamic Religion (1 to 15)
-            {
-                category: "ئایینی پیرۆز",
-                question: "١. باوەڕبوون بە خودا مانای چییە؟",
-                options: [
-                    "A) باوەڕ بە مرۆڤ",
-                    "B) باوەڕ بە الله کە خودای هەموو شتێکە",
-                    "C) باوەڕ بە سروشت",
-                    "D) باوەڕ بە پێغەمبەران"
-                ],
-                correct: 1,
-                explanation: "وەڵامی ڕاست (B)یە، چونكە باوەڕی ڕاستەقینە بە خودا ئەوەیە باوەڕت هەبێت ئەو پەروەردگار و دروستکەری هەموو شتێکە. بژاردەکانی تر (مرۆڤ، سروشت، پێغەمبەران) دروستکراون و شایستەی پەرستن و پەروەردگارێتی نیین."
-            },
-            {
-                category: "ئایینی پیرۆز",
-                question: "٢. یەکتاپەرستی چییە؟",
-                options: [
-                    "A) پەرستنی چەند خودا",
-                    "B) پەرستنی مرۆڤ",
-                    "C) پەرستنی تەنها خودا",
-                    "D) وازهێنان لە پەرستن"
-                ],
-                correct: 2,
-                explanation: "وەڵامی ڕاست (C)یە کە بریتییە لە تاکپەرستن و تەنها تەرخانکردنی پەرستن بۆ خودای یەکتا. بژاردەی (A) فرەپەرستییە، و (B) و (D) پێچەوانەی بنەمای ئایینن."
-            },
-            {
-                category: "ئایینی پیرۆز",
-                question: "٣. مرۆڤ و جەنۆک بۆ چی دروست کراون؟",
-                options: [
-                    "A) بۆ سامان",
-                    "B) بۆ پەرستنی خودا",
-                    "C) بۆ دەسەڵات",
-                    "D) بۆ ژیانی دنیا"
-                ],
-                correct: 1,
-                explanation: "وەڵامی ڕاست (B)یە؛ بەپێی دەقە ئایینییەکان ئامانجی سەرەکی دروستکردنی مرۆڤ و جەنۆک تەنها پەرستنی خودایە. سامان و دەسەڵات و ژیانی دنیا تەنها هۆکار یان تاقیکردنەوەن نەک ئامانجی سەرەکی."
-            },
-            {
-                category: "ئایینی پیرۆز",
-                question: "٤. بانگەوازی سەرەتایی هەموو پێغەمبەران چی بوو؟",
-                options: [
-                    "A) سامان",
-                    "B) یەکتاپەرستی",
-                    "C) جەنگ",
-                    "D) زانست"
-                ],
-                correct: 1,
-                explanation: "وەڵامی ڕاست (B)یە، هەموو پێغەمبەرێک لەسەرەتای بانگەوازیدا داوای لە گەلەکەی کردووە کە تەنها خودا بپەرستن (یەکتاپەرستی). سامان و جەنگ و زانست ئامانجی سەرەکی بانگەواز نەبوون."
-            },
-            {
-                category: "ئایینی پیرۆز",
-                question: "٥. پێغەمبەر محمد (د.خ) چەند ساڵ لە مەککە بانگەوازی کرد؟",
-                options: [
-                    "A) ٥ ساڵ",
-                    "B) ١٠ ساڵ",
-                    "C) ١٣ ساڵ",
-                    "D) ٢٠ ساڵ"
-                ],
-                correct: 2,
-                explanation: "وەڵامی ڕاست (C)یە، پێغەمبەر (د.خ) ١٣ ساڵ لە مەککە بانگەوازی کرد پێش ئەوەی کۆچ بکات بۆ مەدینە."
-            },
-            {
-                category: "ئایینی پیرۆز",
-                question: "٦. یەکتاپەرستی دەبێتە هۆی چی؟",
-                options: [
-                    "A) ترس",
-                    "B) خۆشەختی و لێخۆشبوون",
-                    "C) دوورکەوتنەوە",
-                    "D) کۆیلایەتی"
-                ],
-                correct: 1,
-                explanation: "وەڵامی ڕاست (B)یە، یەکتاپەرستی مرۆڤ دەگەێنێتە بەختەوەری دنیا و دواڕۆژ و لێخۆشبوونی خودا. ترس و کۆیلایەتی پێچەوانەی ئازادی و ئارامی یەکتاپەرستین."
-            },
-            {
-                category: "ئایینی پیرۆز",
-                question: "٧. یەکتاپەرستی مرۆڤ لە چی ڕزگار دەکات؟",
-                options: [
-                    "A) زانست",
-                    "B) سامان",
-                    "C) کۆیلایەتی",
-                    "D) کار"
-                ],
-                correct: 2,
-                explanation: "وەڵامی ڕاست (C)یە، یەکتاپەرستی مرۆڤ لە کۆیلایەتی بۆ غیرەخودا (مرۆڤ یان دیاردەکان) ڕزگار دەکات و تەنها دەیبەسێتەوە بە خالقەوە."
-            },
-            {
-                category: "ئایینی پیرۆز",
-                question: "٨. یەکتاپەرستی چ کەسایەتییەک دروست دەکات؟",
-                options: [
-                    "A) هاوسەنگ",
-                    "B) لاواز",
-                    "C) دوودڵ",
-                    "D) ترساو"
-                ],
-                correct: 0,
-                explanation: "وەڵامی ڕاست (A)یە، کەسایەتییەکی هاوسەنگ لە نێوان ڕۆح و ماددە و لە نێوان ترس و هیوادا دروست دەکات، بە پێچەوانەی کەسایەتی لاواز یان دوودڵ."
-            },
-            {
-                category: "ئایینی پیرۆز",
-                question: "٩. یەکتاپەرستی چی بۆ دەروون دروست دەکات؟",
-                options: [
-                    "A) ئارامی",
-                    "B) ترس",
-                    "C) دوودڵی",
-                    "D) بێ‌ئومێدی"
-                ],
-                correct: 0,
-                explanation: "وەڵامی ڕاست (A)یە، باوەڕی راستەقینە دەروون ئارام دەکاتەوە چونکە مرۆڤ هەست بە پشتپێبەستن بە پەروەردگاری مەزن دەکات."
-            },
-            {
-                category: "ئایینی پیرۆز",
-                question: "١٠. یەکتاپەرستی چۆن ئیرادە بەهێز دەکات؟",
-                options: [
-                    "A) پشتبەستن بە خەڵک",
-                    "B) پشتبەستن بە خودা",
-                    "C) دوورکەوتنەوە",
-                    "D) پشتبەستن بە سامان"
-                ],
-                correct: 1,
-                explanation: "وەڵامی ڕاست (B)یە، پشت بەستن بە خودا ئیرادەی مرۆڤ پۆڵایین دەکات لە بەرامبەر سەختيیەکاندا."
-            },
-            {
-                category: "ئایینی پیرۆز",
-                question: "١١. یەکتاپەرستی چۆن مافەکان دەپارێزێت؟",
-                options: [
-                    "A) جیاوازی",
-                    "B) زۆرداری",
-                    "C) یەکسانی",
-                    "D) کۆیلایەتی"
-                ],
-                correct: 2,
-                explanation: "وەڵامی ڕاست (C)یە، لە سایەی یەکتاپەرستیدا بنەمای یەکسانی لەبەردەم یاسای خوداییدا مافەکان دەپارێزێت."
-            },
-            {
-                category: "ئایینی پیرۆز",
-                question: "١٢. بۆچی محمد (د.خ) کۆتا پێغەمبەرە؟",
-                options: [
-                    "A) پەیامەکەی تایبەتە",
-                    "B) پەیامەکەی نەماوە",
-                    "C) پەیامەکەی تەواو و پارێزراوە",
-                    "D) پێغەمبەری دیکە هات"
-                ],
-                correct: 2,
-                explanation: "وەڵامی ڕاست (C)یە، پەیامەکەی (قورئان و سوننەت) تەواوە و بۆ هەموو کات و شوێنێک بە پارێزراوی ماوەتەوە، بۆیە پێویستی بە پێغەمبەری تر نەماوە."
-            },
-            {
-                category: "ئایینی پیرۆز",
-                question: "١٣. کامەیان هۆکارێکی ناردنی پێغەمبەرانی پێشوو بوو؟",
-                options: [
-                    "A) نەمانى پەیام",
-                    "B) زانستی زۆر",
-                    "C) باوەڕداری خەڵک",
-                    "D) پارێزراوی پەیام"
-                ],
-                correct: 0,
-                explanation: "وەڵامی ڕاست (A)یە، پێغەمبەرانی پێشوو دەهاتن چونكە پەیامەکانی پێشوویان گۆڕدراوبوو یان لەناوچووبوو."
-            },
-            {
-                category: "ئایینی پیرۆز",
-                question: "١٤. پەیامی محمد (د.خ) چۆنە؟",
-                options: [
-                    "A) ناتەواوە",
-                    "B) تایبەتە",
-                    "C) تەواو و پارێزراوە",
-                    "D) کاتییە"
-                ],
-                correct: 2,
-                explanation: "وەڵامی ڕاست (C)یە، پەیامی اسلام کۆتا و تەواوترین پەیامە و خودا خۆی بەرپرسیارێتی پاراستنی گرتووەتە ئەستۆ."
-            },
-            {
-                category: "ئایینی پیرۆز",
-                question: "١٥. «خاتَمُ النَّبِييِّنَ» واتە چی؟",
-                options: [
-                    "A) یەکەم پێغەمبەر",
-                    "B) پێغەمبەری گەلێک",
-                    "C) کۆتا پێغەمبەر",
-                    "D) پێغەمبەری دووەم"
-                ],
-                correct: 2,
-                explanation: "وەڵامی ڕاست (C)یە، وشەی خاتم لێرەدا بە مانای کۆتایی هاتن و مۆرککردنی زنجیرەی پێغەمبەران دێت."
-            },
-            // Arabic Literature (16 to 35)
-            {
-                category: "ئەدەبی عەرەبی",
-                question: "١٦. مَا الْفِكْرَةُ الرَّئِيسَةُ لِقَصِيدَةِ «مُدُنٌ مُتَعَانِقَةٌ»؟",
-                options: [
-                    "A) الدَّعْوَةُ إِلَى الْحَرْبِ",
-                    "B) الدَّعْوَةُ إِلَى التَّعَاوُنِ وَالدِّيمُقْرَاطِيَّةِ",
-                    "C) وَصْفُ الطَّبِيعَةِ",
-                    "D) وَصْفُ الْمَدِينَةِ"
-                ],
-                correct: 1,
-                explanation: "وەڵامی ڕاست (B)یە، بیرۆکەی سەرەکی هاندانی هاوکاری مرۆیی و بڵاوکردنەوەی دیموکراسییە. شەڕ و وەسفی سادەی سروشت مەبەستی سەرەکی نەبوون."
-            },
-            {
-                category: "ئەدەبی عەرەبی",
-                question: "١٧. مَا مَعْنَى كَلِمَةِ «أَسْمَى» فِي السِّيَاقِ؟",
-                options: [
-                    "A) أَقَلُّ رُقِيّاً",
-                    "B) أَكْثَرُ رُقِيّاً وَسُمُوّاً",
-                    "C) أَسْرَعُ",
-                    "D) أَصْغَرُ"
-                ],
-                correct: 1,
-                explanation: "وەڵامی ڕاست (B)یە، وشەی أسمى واتە بەرزتر و پایەدارتر و خاوەن ڕوتبەی بەرزتر."
-            },
-            {
-                category: "ئەدەبی عەرەبی",
-                question: "١٨. مَا الْمَعْنَى الْبَعِيدُ الْمَقْصُودُ مِنْ «طَلَعَتْ عَلَيْهِ شَمْسٌ»؟",
-                options: [
-                    "A) شُرُوقُ الشَّمْسِ",
-                    "B) جَعْلُ الْجِنْسِ الْبَشَرِيِّ فِي أَرْقَى مَرَاتِبِ السُّمُوِّ",
-                    "C) سُقُوطُ الْمَطَرِ",
-                    "D) ظُهُورُ الْقَمَرِ"
-                ],
-                correct: 1,
-                explanation: "وەڵامی ڕاست (B)یە، مانای مەجازی و قوڵی ڕستەکە گەیاندنی مرۆڤایەتییە بۆ بەرزترین ئاستی ڕوتبە و سەروەری."
-            },
-            {
-                category: "ئەدەبی عەرەبی",
-                question: "١٩. لِمَادَا تَكَرَّرَتْ شِبْهُ الْجُمْلَةِ «بِحُبِّ الرُّفْقَةِ»؟",
-                options: [
-                    "A) لِلْدَّعْوَةِ إِلَى الْحَرْبِ",
-                    "B) لِلتَّْعْبِيرِ عَنْ رَغْبَةِ الشَّاِعِرِ فِي سِيَادَةِ الرُّفْقَةِ",
-                    "C) لِوَصْفِ الطَّبِيعَةِ",
-                    "D) لِوَصْفِ الْمَدِينَةِ"
-                ],
-                correct: 1,
-                explanation: "وەڵامی ڕاست (B)یە، دووبارەکردنەوەکە بۆ جەختکردنە سەر خۆشەویستی و بڵاوبوونەوەی هاوڕێیەتی و پێکەوەژیانە."
-            },
-            {
-                category: "ئەدەبی عەرەبی",
-                question: "٢٠. مَا الْقِيَمُ الْإِنْسَانِيَّةُ الَّتِي عَبَّرَ عَنْهَا الشَّاعِرُ؟",
-                options: [
-                    "A) الْحَرْبُ وَالْقَتْلُ",
-                    "B) السُّمُوُّ وَالْوِدَادُ وَالتَّعَاضُدُ",
-                    "C) الْفَقْرُ وَالْجُوعُ",
-                    "D) الْخَوْفُ وَالْحُزْنُ"
-                ],
-                correct: 1,
-                explanation: "وەڵامی ڕاست (B)یە، بەرزایی، خۆشەویستی (وداد) و هاوکاری (تعاضد) ئەو بەهایە مرۆییانەن کە شاعیر باسیان دەکات."
-            },
-            {
-                category: "ئەدەبی عەرەبی",
-                question: "٢١. مَا الْفِكْرَةُ الرَّئِيسَةُ فِي الْقِسْمِ الثَّانِي مِنَ الْقَصِيدَةِ؟",
-                options: [
-                    "A) تَحْقِيقُ الدِّيمُقْرَاطِيَّةِ",
-                    "B) وَصْفُ النَّهْرِ",
-                    "C) وَصْفُ الْحَرْبِ",
-                    "D) الدَّعْوَةُ إِلَى السَّفَرِ"
-                ],
-                correct: 0,
-                explanation: "وەڵامی ڕاست (A)یە، لە بەشی دووەمدا گرنگی دەدرێت بە بەدیهێنانی بنەماکانی دیموکراسی."
-            },
-            {
-                category: "ئەدەبی عەرەبی",
-                question: "٢٢. مَنْ هِيَ الْمَرْأَةُ الَّتِي قَصَدَهَا الشَّاعِرُ؟",
-                options: [
-                    "A) أُمُّهُ فَقَطْ",
-                    "B) زَوْجَتُهُ فَقَطْ",
-                    "C) قَدْ تَكُونُ زَوْجَتَهُ أَوْ رَمْزاً لِلدِّيمُقْرَاطِيَّةِ",
-                    "D) أُخْتُهُ"
-                ],
-                correct: 2,
-                explanation: "وەڵامی ڕاست (C)یە، لە ڕووی ئەدەبییەوە مەبەست لە ژن لەو سیاقەدا دەکرێت هاوسەر بێت یان هێمایەک بۆ ئازادی و دیموکراسی."
-            },
-            {
-                category: "ئەدەبی عەرەبی",
-                question: "٢٣. مَا الدِّيمُقْرَاطِيَّةُ؟",
-                options: [
-                    "A) شَكْلٌ مِنْ أَشْكَالِ الْحُكْمِ",
-                    "B) نَوْعٌ مِنَ التِّجَارَةِ",
-                    "C) نَوْعٌ مِنَ الرِّيَاضَةِ",
-                    "D) طَرِيقَةٌ لِلزِّرَاعَةِ"
-                ],
-                correct: 0,
-                explanation: "وەڵامی ڕاست (A)یە، دیموکراسی شێوازێکی حوکمڕانییە کە تێیدا گەل بەشدارە لە بڕیاردا."
-            },
-            {
-                category: "ئەدەبی عەرەبی",
-                question: "٢٤. مِنْ قِيَمِ الدِّيمُقْرَاطِيَّةِ:",
-                options: [
-                    "A) الظُّلْمُ",
-                    "B) الْمُسَاوَاةُ وَحُرِّيَّةُ التَّعْبِيرِ",
-                    "C) الْحَرْبُ",
-                    "D) التَّمْيِيزُ"
-                ],
-                correct: 1,
-                explanation: "وەڵامی ڕاست (B)یە، یەکسانی و ئازادی ڕادەربڕین دوو کۆڵەکەی سەرەکی دیموکراسین، بە پێچەوانەی ستەم و جیاکارییەوە."
-            },
-            {
-                category: "ئەدەبی عەرەبی",
-                question: "٢٥. مَنْ هُوَ مُحْيِي الدِّينِ زَنْكَنَةُ؟",
-                options: [
-                    "A) شَاعِرٌ فَرَنْسِيٌّ",
-                    "B) كَاتِبٌ مَسْرَحِيٌّ مِنَ الْعِرَاقِ",
-                    "C) رِيَاضِيٌّ",
-                    "D) مُهَنْدِسٌ"
-                ],
-                correct: 1,
-                explanation: "وەڵامی ڕاست (B)یە، محی الدین زنگنە نووسەر و شانۆنامەنوسێکی دیاری عێراقی بوو."
-            },
-            {
-                category: "ئەدەبی عەرەبی",
-                question: "٢٦. أَيْنَ وُلِدَ مُحْيِي الدِّينِ زَنْكَنَةُ؟",
-                options: [
-                    "A) بَغْدَاد",
-                    "B) الْبَصْرَة",
-                    "C) كَرْكُوك",
-                    "D) الْحِلَّة"
-                ],
-                correct: 2,
-                explanation: "وەڵامی ڕاست (C)یە، لە شاری کەرکووک لەدایک بووە."
-            },
-            {
-                category: "ئەدەبی عەرەبی",
-                question: "٢٧. فِي أَيِّ عَامٍ تَخَرَّجَ مِنْ جَامِعَةِ بَغْدَادَ؟",
-                options: [
-                    "A) ١٩٥٢",
-                    "B) ١٩٦٢",
-                    "C) ١٩٧٢",
-                    "D) ١٩٨٢"
-                ],
-                correct: 1,
-                explanation: "وەڵامی ڕاست (B)یە، لە ساڵی ١٩٦٢ لە زانکۆی بەغدا دەرچووە."
-            },
-            {
-                category: "ئەدەبی عەرەبی",
-                question: "٢٨. مَا مَعْنَى «نَصَبٌ»؟",
-                options: [
-                    "A) فَرَحٌ",
-                    "B) تَعَبٌ",
-                    "C) نَوْمٌ",
-                    "D) سُرُورٌ"
-                ],
-                correct: 1,
-                explanation: "وەڵامی ڕاست (B)یە، وشەی نصب لە زماندا بە مانای ماندووبوون و قورسی دێت."
-            },
-            {
-                category: "ئەدەبی عەرەبی",
-                question: "٢٩. مَا مَعْنَى «تَزْخَرُ»؟",
-                options: [
-                    "A) تَجِفُّ",
-                    "B) تَمْتَلِئُ وَتَفِيضُ",
-                    "C) تَسْقُطُ",
-                    "D) تَخْتَفِي"
-                ],
-                correct: 1,
-                explanation: "وەڵامی ڕاست (B)یە، تزخر واتە پڕ دەبێت و لافاو دەدات یان دەکوڵێت و پڕ لە خێر دەبێت."
-            },
-            {
-                category: "ئەدەبی عەرەبی",
-                question: "٣٠. مَا مَعْنَى «الْخَرِيرُ»؟",
-                options: [
-                    "A) صَوْتُ الرِّيَاحِ",
-                    "B) صَوْتُ الْمِيَاهِ",
-                    "C) صَوْتُ الطُّيُورِ",
-                    "D) صَوْتُ النَّاسِ"
-                ],
-                correct: 1,
-                explanation: "وەڵامی ڕاست (B)یە، خریر دەنگی تریشقە و بڕینی ئاوە (دەنگی دابارین یان ڕۆیشتنی ئاوی پاک)."
-            },
-            {
-                category: "ئەدەبی عەرەبی",
-                question: "٣١. مَا مَعْنَى «مَعَ الرَّشَقَاتِ الْأُولَى مِنْ وَهْجِ الشَّمْسِ»؟",
-                options: [
-                    "A) لَيْلاً",
-                    "B) فَجْراً",
-                    "C) ظُهْراً",
-                    "D) مَسَاءً"
-                ],
-                correct: 1,
-                explanation: "وەڵامی ڕاست (B)یە، مەبەست پێی کاتی بەیانی زوو و هەڵاتنی تیشکی یەکەمی خۆرە (فەجر)."
-            },
-            {
-                category: "ئەدەبی عەرەبی",
-                question: "٣٢. مَا الْمَعْنَى الْمُنَاسِبُ لِكَلِمَةِ «تُغْدِقُ»؟",
-                options: [
-                    "A) تُقَلِّلُ",
-                    "B) تُكْثِرُ",
-                    "C) تَمْنَعُ",
-                    "D) تَحْبِسُ"
-                ],
-                correct: 1,
-                explanation: "وەڵامی ڕاست (B)یە، تغدق واتە بەخشندەیی دەکات و دەبەخشێت بە زۆری."
-            },
-            {
-                category: "ئەدەبی عەرەبی",
-                question: "٣٣. مَا دَلَالَةُ تَعْبِيرِ «أَذْرُعُ النَّهْرِ»؟",
-                options: [
-                    "A) أَلْوَانُ النَّهْرِ",
-                    "B) الْمَجَارِي الْمُتَفَرِّعَةُ مِنَ النَّهْرِ",
-                    "C) عُمْقُ النَّهْرِ",
-                    "D) طُولُ النَّهْرِ"
-                ],
-                correct: 1,
-                explanation: "وەڵامی ڕاست (B)یە، مەبەست لە قۆڵەکانی ڕووبار، لق و پۆپ و مەجارییە تیشکۆکانی ئاوە کە دەچنەوە ناو زەوییەکان."
-            },
-            {
-                category: "ئەدەبی عەرەبی",
-                question: "٣٤. مَا الْعَلَاقَةُ بَيْنَ الرِّجَالِ وَالنَّهْرِ؟",
-                options: [
-                    "A) عَدَاوَةٌ",
-                    "B) عَلَاقَةُ عِشْقٍ",
-                    "C) خَوْفٌ",
-                    "D) إِهْمَالٌ"
-                ],
-                correct: 1,
-                explanation: "وەڵامی ڕاست (B)یە، پەیوەندی نێوان پیاوان و ڕووبار پەیوەندییەکی قووڵی خۆشەویستی و پێکەوە گرێدراوە چونکە سەرچاوەی ژیانیانە."
-            },
-            {
-                category: "ئەدەبی عەرەبی",
-                question: "٣٥. لِمَادَا يُحِبُّ الرَّجَالُ النَّهْرَ؟",
-                options: [
-                    "A) لِأَنَّهُمْ يَسْقُونَ مِنْ مِيَاهِهِ مَزْرُوعَاتِهِمْ",
-                    "B) لِأَنَّهُمْ يَسْبَحُونَ فِيهِ فَقَطْ",
-                    "C) لِأَنَّهُ بَعِيدٌ عَنْهُمْ",
-                    "D) لِأَنَّهُمْ لَا يَعْمَلُونَ"
-                ],
-                correct: 0,
-                explanation: "وەڵامی ڕاست (A)یە، چونکە ئاوی ڕووبار سەرچاوەیەکی سەرەکییە بۆ ئاودانی کشتوکاڵ و بژێوییان."
-            }
-        ];
+const $ = id => document.getElementById(id);
+const startScreen = $("start-screen");
+const quizScreen = $("quiz-screen");
+const resultsScreen = $("results-screen");
+const questionCounter = $("question-counter");
+const categoryBadge = $("category-badge");
+const progressBar = $("progress-bar");
+const questionText = $("question-text");
+const optionsContainer = $("options-container");
+const nextBtn = $("next-btn");
+const prevBtn = $("prev-btn");
+const scoreDisplay = $("score-display");
+const categoryScores = $("category-scores");
+const reviewContainer = $("review-container");
 
-        let currentQuestionIndex = 0;
-        let userAnswers = new Array(questions.length).fill(null);
+// Fisher-Yates shuffle. Returns a new array and does not mutate the source.
+function shuffleArray(array) {
+    const result = [...array];
+    for (let i = result.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [result[i], result[j]] = [result[j], result[i]];
+    }
+    return result;
+}
 
-        const startScreen = document.getElementById('start-screen');
-        const quizScreen = document.getElementById('quiz-screen');
-        const resultsScreen = document.getElementById('results-screen');
-        const questionCounter = document.getElementById('question-counter');
-        const categoryBadge = document.getElementById('category-badge');
-        const questionText = document.getElementById('question-text');
-        const optionsContainer = document.getElementById('options-container');
-        const nextBtn = document.getElementById('next-btn');
-        const scoreDisplay = document.getElementById('score-display');
-        const reviewContainer = document.getElementById('review-container');
+function createQuiz() {
+    const categories = [...new Set(questions.map(q => q.category))];
+    const result = [];
 
-        function startQuiz() {
-            startScreen.classList.add('hidden');
-            quizScreen.classList.remove('hidden');
-            currentQuestionIndex = 0;
-            userAnswers.fill(null);
-            loadQuestion();
-        }
+    for (const category of categories) {
+        const categoryQuestions = shuffleArray(
+            questions.filter(q => q.category === category)
+        );
 
-        function loadQuestion() {
-            const currentQ = questions[currentQuestionIndex];
-            questionCounter.textContent = `پرسیاری ${currentQuestionIndex + 1} لە ٣٥`;
-            categoryBadge.textContent = currentQ.category;
-            questionText.textContent = currentQ.question;
+        for (const question of categoryQuestions) {
+            const choices = question.options.map((text, index) => ({
+                text,
+                correct: index === question.correct
+            }));
 
-            optionsContainer.innerHTML = '';
-            currentQ.options.forEach((option, index) => {
-                const btn = document.createElement('button');
-                btn.className = `w-full text-right p-4 rounded-xl border transition duration-200 font-medium ${
-                    userAnswers[currentQuestionIndex] === index
-                        ? 'bg-emerald-700 border-emerald-500 text-white'
-                        : 'bg-slate-700/60 hover:bg-slate-700 border-slate-600 text-slate-200'
-                }`;
-                btn.textContent = option;
-                btn.onclick = () => selectOption(index);
-                optionsContainer.appendChild(btn);
+            const shuffledChoices = shuffleArray(choices);
+            const correctIndex = shuffledChoices.findIndex(choice => choice.correct);
+
+            result.push({
+                ...question,
+                options: shuffledChoices.map(choice => choice.text),
+                correct: correctIndex
             });
+        }
+    }
 
-            if (currentQuestionIndex === questions.length - 1) {
-                nextBtn.textContent = 'پیشاندانی ئەنجام و ڕوونکردنەوە';
-            } else {
-                nextBtn.textContent = 'پرسیاری داهاتوو';
-            }
+    return result;
+}
+
+function startQuiz() {
+    quizQuestions = createQuiz();
+    userAnswers = new Array(quizQuestions.length).fill(null);
+    currentQuestionIndex = 0;
+
+    startScreen.classList.add("hidden");
+    resultsScreen.classList.add("hidden");
+    quizScreen.classList.remove("hidden");
+
+    loadQuestion();
+}
+
+function loadQuestion() {
+    const q = quizQuestions[currentQuestionIndex];
+
+    questionCounter.textContent =
+        `پرسیاری ${toKurdishDigits(currentQuestionIndex + 1)} لە ${toKurdishDigits(quizQuestions.length)}`;
+
+    // Update Progress Bar Width
+    const progressPercent = ((currentQuestionIndex + 1) / quizQuestions.length) * 100;
+    progressBar.style.width = `${progressPercent}%`;
+
+    categoryBadge.textContent = q.category;
+    categoryBadge.className = q.category === "ئایینی پیرۆز"
+        ? "bg-sky-900/60 text-sky-300 px-3 py-1 rounded-full text-xs border border-sky-700"
+        : "bg-emerald-900/60 text-emerald-300 px-3 py-1 rounded-full text-xs border border-emerald-700";
+
+    // Dynamic question numbering prepended here
+    questionText.textContent = `${toKurdishDigits(currentQuestionIndex + 1)}. ${q.question}`;
+    
+    optionsContainer.replaceChildren();
+
+    q.options.forEach((option, index) => {
+        const button = document.createElement("button");
+        const selected = userAnswers[currentQuestionIndex] === index;
+
+        button.type = "button";
+        button.className = "w-full text-right p-4 rounded-xl border transition duration-200 font-medium " +
+            (selected
+                ? "bg-emerald-700 border-emerald-400 text-white"
+                : "bg-slate-700/60 hover:bg-slate-700 border-slate-600 text-slate-200");
+
+        button.textContent = `${String.fromCharCode(65 + index)}) ${option}`;
+        button.setAttribute("aria-pressed", String(selected));
+        button.onclick = () => selectOption(index);
+        optionsContainer.appendChild(button);
+    });
+
+    prevBtn.classList.toggle("hidden", currentQuestionIndex === 0);
+
+    nextBtn.textContent = currentQuestionIndex === quizQuestions.length - 1
+        ? "پیشاندانی ئەنجام و ڕوونکردنەوە"
+        : "پرسیاری داهاتوو";
+
+    nextBtn.classList.toggle("hidden", userAnswers[currentQuestionIndex] === null);
+}
+
+function selectOption(index) {
+    userAnswers[currentQuestionIndex] = index;
+    loadQuestion();
+}
+
+function nextQuestion() {
+    if (userAnswers[currentQuestionIndex] === null) {
+        alert("تکایە سەرەتا یەکێک لە بژاردەکان هەڵبژێرە!");
+        return;
+    }
+
+    if (currentQuestionIndex < quizQuestions.length - 1) {
+        currentQuestionIndex++;
+        loadQuestion();
+    } else {
+        showResults();
+    }
+}
+
+function previousQuestion() {
+    if (currentQuestionIndex > 0) {
+        currentQuestionIndex--;
+        loadQuestion();
+    }
+}
+
+function showResults() {
+    quizScreen.classList.add("hidden");
+    resultsScreen.classList.remove("hidden");
+    reviewContainer.replaceChildren();
+
+    let score = 0;
+    const scoresByCategory = {};
+
+    quizQuestions.forEach((q, index) => {
+        if (!scoresByCategory[q.category]) {
+            scoresByCategory[q.category] = { correct: 0, total: 0 };
         }
 
-        function selectOption(index) {
-            userAnswers[currentQuestionIndex] = index;
-            loadQuestion();
-            nextBtn.classList.remove('hidden');
+        scoresByCategory[q.category].total++;
+
+        const userChoice = userAnswers[index];
+        const isCorrect = userChoice === q.correct;
+
+        if (isCorrect) {
+            score++;
+            scoresByCategory[q.category].correct++;
         }
 
-        function nextQuestion() {
-            if (userAnswers[currentQuestionIndex] === null) {
-                alert('تکایە سەرەتا یەکێک لە بژاردەکان هەڵبژێرە!');
-                return;
-            }
+        const card = document.createElement("div");
+        card.className = "p-5 rounded-xl border " +
+            (isCorrect
+                ? "bg-emerald-950/30 border-emerald-800/60"
+                : "bg-rose-950/30 border-rose-800/60");
 
-            currentQuestionIndex++;
-            if (currentQuestionIndex < questions.length) {
-                nextBtn.classList.add('hidden');
-                if (userAnswers[currentQuestionIndex] !== null) {
-                    nextBtn.classList.remove('hidden');
-                }
-                loadQuestion();
-            } else {
-                showResults();
-            }
+        const topRow = document.createElement("div");
+        topRow.className = "flex items-start justify-between gap-3 mb-3";
+
+        const status = document.createElement("span");
+        status.className = "text-xs font-bold px-2.5 py-1 rounded-full " +
+            (isCorrect
+                ? "bg-emerald-800 text-emerald-200"
+                : "bg-rose-800 text-rose-200");
+        status.textContent = isCorrect ? "✓ ڕاستە" : "✗ هەڵەیە";
+
+        const number = document.createElement("span");
+        number.className = "text-xs text-slate-400";
+        number.textContent = `پرسیاری ${toKurdishDigits(index + 1)}`;
+
+        topRow.append(status, number);
+
+        const category = document.createElement("p");
+        category.className = "text-xs text-slate-400 mb-2";
+        category.textContent = q.category;
+
+        const question = document.createElement("h4");
+        question.className = "font-semibold text-slate-100 mb-3";
+        question.textContent = `${toKurdishDigits(index + 1)}. ${q.question}`;
+
+        const yourAnswer = document.createElement("p");
+        yourAnswer.className = "text-sm mb-2 text-slate-300";
+
+        const yourLabel = document.createElement("strong");
+        yourLabel.textContent = "وەڵامی تۆ: ";
+
+        const yourText = document.createElement("span");
+        yourText.className = isCorrect
+            ? "text-emerald-400 font-bold"
+            : "text-rose-400 font-bold";
+        yourText.textContent = userChoice !== null
+            ? `${String.fromCharCode(65 + userChoice)}) ${q.options[userChoice]}`
+            : "هیچ وەڵامێک نەدراوە";
+
+        yourAnswer.append(yourLabel, yourText);
+
+        card.append(topRow, category, question, yourAnswer);
+
+        if (!isCorrect) {
+            const correctAnswer = document.createElement("p");
+            correctAnswer.className = "text-sm mb-2 text-slate-300";
+
+            const label = document.createElement("strong");
+            label.textContent = "وەڵامی ڕاست: ";
+
+            const answer = document.createElement("span");
+            answer.className = "text-emerald-400 font-bold";
+            answer.textContent =
+                `${String.fromCharCode(65 + q.correct)}) ${q.options[q.correct]}`;
+
+            correctAnswer.append(label, answer);
+            card.appendChild(correctAnswer);
         }
 
-        function showResults() {
-            quizScreen.classList.add('hidden');
-            resultsScreen.classList.remove('hidden');
+        const explanation = document.createElement("div");
+        explanation.className =
+            "mt-3 pt-3 border-t border-slate-700/60 text-xs sm:text-sm text-slate-300 bg-slate-900/40 p-3 rounded-lg";
 
-            let score = 0;
-            reviewContainer.innerHTML = '';
+        const explanationLabel = document.createElement("strong");
+        explanationLabel.textContent = "ڕوونکردنەوە: ";
 
-            questions.forEach((q, i) => {
-                const userChoice = userAnswers[i];
-                const isCorrect = userChoice === q.correct;
-                if (isCorrect) score++;
+        explanation.append(explanationLabel, document.createTextNode(q.explanation));
+        card.appendChild(explanation);
+        reviewContainer.appendChild(card);
+    });
 
-                const reviewItem = document.createElement('div');
-                reviewItem.className = `p-5 rounded-xl border ${isCorrect ? 'bg-emerald-950/30 border-emerald-800/60' : 'bg-rose-950/30 border-rose-800/60'}`;
-                
-                reviewItem.innerHTML = `
-                    <div class="flex items-start justify-between mb-2">
-                        <span class="text-xs font-bold px-2.5 py-1 rounded-full ${isCorrect ? 'bg-emerald-800 text-emerald-200' : 'bg-rose-800 text-rose-200'}">
-                            ${isCorrect ? '✓ ڕاستە' : '✗ هەڵەیە'}
-                        </span>
-                        <span class="text-xs text-slate-400">پرسیاری ${i + 1}</span>
-                    </div>
-                    <h4 class="font-semibold text-slate-100 mb-2">${q.question}</h4>
-                    <p class="text-sm mb-1 text-slate-300"><strong>وەڵامی تۆ:</strong> <span class="${isCorrect ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'}">${userChoice !== null ? q.options[userChoice] : 'هیچ وەڵامێک نەدراوە'}</span></p>
-                    ${!isCorrect ? `<p class="text-sm mb-2 text-slate-300"><strong>وەڵامی ڕاست:</strong> <span class="text-emerald-400 font-bold">${q.options[q.correct]}</span></p>` : ''}
-                    <div class="mt-3 pt-3 border-t border-slate-700/60 text-xs sm:text-sm text-slate-300 bg-slate-900/40 p-3 rounded-lg">
-                        <strong>ڕوونکردنەوە:</strong> ${q.explanation}
-                    </div>
-                `;
-                reviewContainer.appendChild(reviewItem);
-            });
+    scoreDisplay.textContent =
+        `${toKurdishDigits(score)} لە ${toKurdishDigits(quizQuestions.length)} (${Math.round(score / quizQuestions.length * 100)}%)`;
 
-            scoreDisplay.textContent = `${score} لە ٣٥ (${Math.round((score / 35) * 100)}%)`;
-        }
+    categoryScores.replaceChildren();
 
-        function restartQuiz() {
-            resultsScreen.classList.add('hidden');
-            startScreen.classList.remove('hidden');
-        }
-    </script>
+    for (const [category, result] of Object.entries(scoresByCategory)) {
+        const line = document.createElement("p");
+        line.textContent =
+            `${category}: ${toKurdishDigits(result.correct)} لە ${toKurdishDigits(result.total)}`;
+        categoryScores.appendChild(line);
+    }
+}
+
+function toKurdishDigits(value) {
+    const digits = ["٠","١","٢","٣","٤","٥","٦","٧","٨","٩"];
+    return String(value).replace(/[0-9]/g, digit => digits[Number(digit)]);
+}
+
+function restartQuiz() {
+    resultsScreen.classList.add("hidden");
+    startScreen.classList.remove("hidden");
+}
+
+// Keep keyboard and button behavior predictable.
+document.addEventListener("keydown", event => {
+    if (quizScreen.classList.contains("hidden")) return;
+
+    if (event.key === "ArrowLeft" && currentQuestionIndex < quizQuestions.length - 1) {
+        if (userAnswers[currentQuestionIndex] !== null) nextQuestion();
+    } else if (event.key === "ArrowRight" && currentQuestionIndex > 0) {
+        previousQuestion();
+    }
+});
+</script>
 </body>
 </html>
