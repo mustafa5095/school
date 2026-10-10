@@ -5,9 +5,13 @@ Static dashboard repository. `index.html` renders every HTML file listed in
 
 ## Commits
 
-All commits must be authored and committed under the repository owner's name
-(`mustafa5095 <pesahngfafa@gmail.com>`). Never add co-author lines or any
-mention of AI or an AI agent to commit messages.
+All commits must be authored and committed under the repository owner's own
+name and email. Auto-detect the identity from the existing git history
+(`git log --format='%an <%ae>'`, which yields the prior commits' author) and
+configure it with `git config user.name` / `git config user.email` before
+committing. Never add co-author lines or any mention of AI or an AI agent to
+commit messages, and never hardcode or expose the owner's email anywhere in the
+repository.
 
 ## File metadata (`description.toml`)
 
