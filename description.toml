@@ -7,3 +7,20 @@ title_en = "General Exam (Religion & Arabic Literature)"
 description_en = "An advanced exam on sacred religion and Arabic literature featuring multiple question types, shuffling, and detailed explanations."
 category = "کویزی ‌هەفتانە/هەفتەی ٢"
 category_en = "Weekly Quizes/Week2"
+
+# Virtual category / folder definitions used only by the webpage
+# (independent of the real file structure). A category is referenced by the
+# slash-separated order in a file's `category` / `category_en` value.
+# Supported keys: name, name_en, description, description_en.
+
+[categories."Weekly Quizes"]
+name = "کویزی ‌هەفتانە"
+name_en = "Weekly Quizes"
+description = "تاقیکردنەوە هەفتانەییەکان"
+description_en = "Weekly quizzes and exams"
+
+[categories."Weekly Quizes/Week2"]
+name = "هەفتەی ٢"
+name_en = "Week 2"
+description = "تاقیکردنەوەی هەفتەی دووەم"
+description_en = "Quizzes for the second week"
