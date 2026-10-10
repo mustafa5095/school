@@ -3,6 +3,34 @@
 Static dashboard repository. `index.html` renders every HTML file listed in
 `files.json`, enriched by `description.toml`.
 
+## Testing before you push
+
+Never claim something works without testing it. Every change must be exercised
+in a real browser before committing, and every feature touched must be verified
+individually. Do not push a change that has not been run.
+
+Test rules:
+
+- Drive the real page in a headless browser (Chromium is installed; Puppeteer
+  Core can be installed temporarily under `/tmp`). Do not rely on reading the
+  code or on a partially-simulated harness.
+- Fail the run on any uncaught page error, `console.error`, or unexpected HTTP
+  4xx/5xx. The only acceptable console noise is the `favicon.ico` 404 (this repo
+  ships no favicon).
+- Exercise every affected feature end to end and assert on the rendered DOM, not
+  on internal variables. For the quiz maker that means: build, start, answer,
+  finish, review, switch language at every screen, restart, download, open the
+  downloaded file and play it, and the negative paths (bad JSON, empty
+  questions).
+- Both languages must be checked wherever text can appear: page content, all
+  buttons/labels, category badges, counters, scores and the review. Confirm the
+  direction switches and that Kurdish uses Kurdish digits.
+- Test both languages of the input too: a bilingual quiz and a single-language
+  quiz, since the language switch must only appear for the bilingual one.
+- Clean up any temporary test files you create; never leave them in the served
+  directory.
+- Only after all checks pass, commit and push.
+
 ## Commits
 
 All commits must be authored and committed under the repository owner's own

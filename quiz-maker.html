@@ -430,6 +430,16 @@ function previousQuestion() {
   }
 }
 
+function startQuiz() {
+  quizQuestions = createQuiz();
+  userAnswers = new Array(quizQuestions.length).fill(null);
+  currentQuestionIndex = 0;
+  startScreen.classList.add("hidden");
+  resultsScreen.classList.add("hidden");
+  quizScreen.classList.remove("hidden");
+  loadQuestion();
+}
+
 function showResults() {
   quizScreen.classList.add("hidden");
   resultsScreen.classList.remove("hidden");
@@ -516,12 +526,12 @@ function showResults() {
     reviewContainer.appendChild(card);
   });
 
-  scoreDisplay.textContent = t().score(td(score), td(quizQuestions.length));
+  scoreDisplay.textContent = t().score(score, quizQuestions.length);
 
   categoryScores.replaceChildren();
   for (const [key, result] of Object.entries(scoresByCategory)) {
     const line = document.createElement("p");
-    line.textContent = t().categoryScore(categoryLabel(key), td(result.correct), td(result.total));
+    line.textContent = t().categoryScore(categoryLabel(key), result.correct, result.total);
     categoryScores.appendChild(line);
   }
 }
@@ -529,6 +539,7 @@ function showResults() {
 function restartQuiz() {
   resultsScreen.classList.add("hidden");
   startScreen.classList.remove("hidden");
+  renderStartScreen();
 }
 
 /* ============================================================
@@ -575,6 +586,10 @@ function setQuizLanguage(lang) {
     langBtn.hidden = false;
   }
   updateDir();
+  $("quiz-title").textContent = pick(quiz.title) || UI.quizFallbackTitle;
+  const subtitle = pick(quiz.subtitle);
+  $("quiz-subtitle").textContent = subtitle;
+  $("quiz-subtitle").className = subtitle ? "text-slate-400 text-sm sm:text-base" : "hidden";
   $("results-title").textContent = t().resultsTitle;
   $("review-heading").textContent = t().reviewHeading;
   $("restart-btn").textContent = t().restart;
@@ -593,11 +608,17 @@ function addQuizToolbar() {
   bar.dir = "ltr";             // keep the switch pinned regardless of page direction
   langBtn = document.createElement("button");
   langBtn.type = "button";
+  langBtn.id = "lang-btn";
   langBtn.className = "bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 font-semibold px-4 py-2 rounded-xl text-sm transition";
   langBtn.addEventListener("click", () => setQuizLanguage(currentLang === "en" ? "ku" : "en"));
   bar.appendChild(langBtn);
   const quizView = $("quiz-view");
   quizView.insertBefore(bar, quizView.firstChild);
+}
+
+function removeQuizToolbar() {
+  if (langBtn && langBtn.parentElement) langBtn.parentElement.remove();
+  langBtn = null;
 }
 
 /* ============================================================
@@ -679,8 +700,9 @@ function buildQuizFromJson(text) {
   resultsScreen.classList.add("hidden");
 
   if (isBilingual()) addQuizToolbar();
-  currentLang = "en";
-  setQuizLanguage("en");
+  else removeQuizToolbar();
+  currentLang = isBilingual() ? "ku" : "en";
+  setQuizLanguage(currentLang);
 
   $("quiz-title").textContent = pick(quiz.title) || UI.quizFallbackTitle;
   const subtitle = pick(quiz.subtitle);
@@ -728,8 +750,11 @@ function buildStandaloneHtml() {
   const homeHtml = withHome
     ? '<a href="index.html" class="bg-slate-700 hover:bg-slate-600 text-white font-semibold py-2 px-4 rounded-xl text-sm transition">🏠 Home</a>'
     : '';
+  const langHtml = bilingual
+    ? '<button type="button" id="lang-btn" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 font-semibold px-4 py-2 rounded-xl text-sm transition">🌐 English</button>'
+    : '';
   const topbar = (withHome || bilingual)
-    ? `<div class="flex justify-between items-center mb-6 gap-3" dir="ltr"><div class="flex items-center gap-2">${homeHtml}</div><button type="button" id="lang-btn" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 font-semibold px-4 py-2 rounded-xl text-sm transition" hidden>🌐 English</button></div>`
+    ? `<div class="flex justify-between items-center mb-6 gap-3" dir="ltr"><div class="flex items-center gap-2">${homeHtml}</div>${langHtml}</div>`
     : '';
 
   return `<!DOCTYPE html>
@@ -826,7 +851,7 @@ function prepare(){ categoryOrder=[...new Set(questions.map(catKey))]; categoryC
 function catLabel(key){ const f=questions.find(q=>catKey(q)===key); return f?pick(f.category):key; }
 function createQuiz(){ const out=[]; for(const c of categoryOrder){ for(const q of shuffle(questions.filter(x=>catKey(x)===c))){ const order=shuffle(q.optionsKu.map((_,i)=>i)); out.push({category:q.category,categoryKey:c,question:q.question,explanation:q.explanation,optionsKu:order.map(i=>q.optionsKu[i]),optionsEn:order.map(i=>q.optionsEn[i]),correct:order.indexOf(q.correct)}); } } return out; }
 function optionAt(q,i){ return currentLang==="en" ? (q.optionsEn[i]||q.optionsKu[i]||"") : (q.optionsKu[i]||q.optionsEn[i]||""); }
-function setLang(lang){ currentLang=lang; document.documentElement.lang=lang; document.documentElement.dir=lang==="en"?"ltr":"rtl"; const b=$("lang-btn"); if(b) b.textContent = lang==="en" ? "🌐 کوردی" : "🌐 English"; $("results-title").textContent=t().resultsTitle; $("review-heading").textContent=t().reviewHeading; $("restart-btn").textContent=t().restart; if(!$("start-screen").classList.contains("hidden")) renderStart(); if(!$("quiz-screen").classList.contains("hidden")) loadQuestion(); if(!$("results-screen").classList.contains("hidden")) showResults(); }
+function setLang(lang){ currentLang=lang; document.documentElement.lang=lang; document.documentElement.dir=lang==="en"?"ltr":"rtl"; const b=$("lang-btn"); if(b) b.textContent = lang==="en" ? "🌐 کوردی" : "🌐 English"; $("quiz-title").textContent=pick(DATA.title)||"Quiz"; const sub=pick(DATA.subtitle); $("quiz-subtitle").textContent=sub; $("quiz-subtitle").className=sub?"text-slate-400 text-sm sm:text-base":"hidden"; $("results-title").textContent=t().resultsTitle; $("review-heading").textContent=t().reviewHeading; $("restart-btn").textContent=t().restart; if(!$("start-screen").classList.contains("hidden")) renderStart(); if(!$("quiz-screen").classList.contains("hidden")) loadQuestion(); if(!$("results-screen").classList.contains("hidden")) showResults(); }
 function renderStart(){ $("start-count").textContent=t().startCount(questions.length); const list=$("start-list"); list.replaceChildren(); for(const key of categoryOrder){ const n=questions.filter(q=>catKey(q)===key).length; const li=document.createElement("li"); li.textContent=t().startCategory(n,catLabel(key)); list.appendChild(li); } for(const line of DATA.intro){ const text=pick(line); if(!text) continue; const li=document.createElement("li"); li.textContent="• "+text; list.appendChild(li); } $("start-btn").textContent=t().startBtn; }
 function loadQuestion(){ const q=quizQuestions[currentQuestionIndex]; $("question-counter").textContent=t().counter(currentQuestionIndex+1,quizQuestions.length); $("progress-bar").style.width=(((currentQuestionIndex+1)/quizQuestions.length)*100)+"%"; const color=categoryColor.get(q.categoryKey)||COLORS[1]; const badge=$("category-badge"); badge.textContent=pick(q.category); badge.className=color.bg+" "+color.text+" px-3 py-1 rounded-full text-xs border "+color.border; $("question-text").textContent=td(currentQuestionIndex+1)+". "+pick(q.question); const c=$("options-container"); c.replaceChildren(); q.optionsKu.forEach((_,i)=>{ const b=document.createElement("button"); const sel=userAnswers[currentQuestionIndex]===i; b.type="button"; b.className="w-full p-4 rounded-xl border transition duration-200 font-medium text-start "+(sel?"bg-emerald-700 border-emerald-400 text-white":"bg-slate-700/60 hover:bg-slate-700 border-slate-600 text-slate-200"); b.textContent=String.fromCharCode(65+i)+") "+optionAt(q,i); b.addEventListener("click",()=>selectOption(i)); c.appendChild(b); }); const p=$("prev-btn"), n=$("next-btn"); p.textContent=t().prev; n.textContent=currentQuestionIndex===quizQuestions.length-1?t().finish:t().next; p.classList.toggle("hidden",currentQuestionIndex===0); n.classList.toggle("hidden",userAnswers[currentQuestionIndex]===null); }
 function selectOption(i){ userAnswers[currentQuestionIndex]=i; loadQuestion(); }
@@ -885,6 +910,21 @@ $("editor-btn").addEventListener("click", () => {
   $("quiz-view").classList.add("hidden");
   $("builder-view").classList.remove("hidden");
 });
+
+/* Play the built quiz from the builder preview. */
+$("start-btn").addEventListener("click", startQuiz);
+$("next-btn").addEventListener("click", nextQuestion);
+$("prev-btn").addEventListener("click", previousQuestion);
+$("restart-btn").addEventListener("click", restartQuiz);
+document.addEventListener("keydown", event => {
+  if ($("quiz-screen").classList.contains("hidden")) return;
+  if (event.key === "ArrowLeft" && currentQuestionIndex < quizQuestions.length - 1) {
+    if (userAnswers[currentQuestionIndex] !== null) nextQuestion();
+  } else if (event.key === "ArrowRight" && currentQuestionIndex > 0) {
+    previousQuestion();
+  }
+});
+
 
 document.title = UI.title;
 $("json-input").value = TEMPLATE_JSON;
