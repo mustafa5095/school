@@ -35,6 +35,19 @@ One section per file: `["<filename>.html"]` with keys:
 `category` values are virtual UI paths, not real directories. `"Quizes/Week1"`
 creates a `Quizes` folder containing a `Week1` subfolder in the webpage.
 
+## Quiz maker
+
+`quiz-maker.html` builds a playable quiz from pasted JSON (see
+`quiz-template.json` for the schema, meant to be handed to an AI). It replicates
+the engine of `quiz-2nd-arabicreligion.html`: shuffled questions per category,
+shuffled options, progress bar, per-category scores, review with explanations,
+keyboard navigation and Kurdish digits.
+
+`meta.interface` picks the interface language: `"ku"` (Kurdish only, no switch),
+`"en"` (English only), or `"both"` (language switch shown). Content is bilingual:
+each text field has a Kurdish base key and an English `_en` key, and the other
+language falls back automatically when one is missing.
+
 ## Category descriptions
 
 Categories can be described in `description.toml` with

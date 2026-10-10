@@ -1,5 +1,13 @@
 # Repository HTML Files Metadata Configuration (Kurdish & English)
 
+["quiz-maker.html"]
+title = "دروستکەری تاقیکردنەوە"
+description = "ئامرازێک بۆ دروستکردنی تاقیکردنەوە لە ڕێگەی JSONـەوە، بە پشتگیری زمانی کوردی و ئینگلیزی و ڕووکاری دووزمانی."
+title_en = "Quiz Maker"
+description_en = "A tool that builds playable quizzes from JSON, with Kurdish and English content and a bilingual interface."
+category = "ئامرازەکان"
+category_en = "Tools"
+
 ["quiz-2nd-arabicreligion.html"]
 title = "تاقیکردنەوەی گشتی (ئایین و ئەدەبی عەرەبی)"
 description = "تاقیکردنەوەیەکی پێشکەوتوو لەسەر ئایینی پیرۆز و ئەدەبی عەرەبی بە شێوازی پرسیاری هەمەجۆر، بارودۆخی تێکەڵکردن و ڕوونکردنەوەی کۆتایی."
