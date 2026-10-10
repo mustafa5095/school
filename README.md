@@ -1,3 +1,3 @@
 # school
-school stuff yk
+school stuff yk\n
 if you find any mistake either submit an issue here or msg me on whatsapp
