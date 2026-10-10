@@ -132,8 +132,8 @@ textarea{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
 const UI = {
   title: "Quiz Maker",
   quizFallbackTitle: "Quiz",
-  startCount: n => `This quiz has ${n} questions:`,
-  startCategory: (n, cat) => `• ${n} questions from ${cat}`,
+  startCount: n => `This quiz has ${n} ${n === 1 ? "question" : "questions"}:`,
+  startCategory: (n, cat) => `• ${n} ${n === 1 ? "question" : "questions"} from ${cat}`,
   startExtra1: "• Correct and wrong answers are explained at the end",
   startExtra2: "• Questions and answers are shuffled every time",
   startBtn: "Start Quiz",
@@ -170,8 +170,8 @@ const UI = {
 const QUIZ_UI = {
   en: UI,
   ku: {
-    startCount: n => `ئەم تاقیکردنەوەیە پێکدێت لە ${td(n)} پرسیار:`,
-    startCategory: (n, cat) => `• ${td(n)} پرسیار لە ${cat}`,
+    startCount: n => `ئەم تاقیکردنەوەیە پێکدێت لە ${n === 1 ? "پرسیارێک" : td(n) + " پرسیار"}:`,
+    startCategory: (n, cat) => `• ${n === 1 ? "پرسیارێک" : td(n) + " پرسیار"} لە ${cat}`,
     startBtn: "دەستپێکردنی تاقیکردنەوە",
     counter: (i, n) => `پرسیاری ${td(i)} لە ${td(n)}`,
     prev: "پێشوو",
@@ -546,7 +546,7 @@ function restartQuiz() {
  * 5) Start screen
  * ============================================================ */
 function renderStartScreen() {
-  $("start-count").textContent = t().startCount(td(questions.length));
+  $("start-count").textContent = t().startCount(questions.length);
 
   const list = $("start-list");
   list.replaceChildren();
@@ -554,7 +554,7 @@ function renderStartScreen() {
   for (const key of categoryOrder) {
     const count = questions.filter(q => categoryKey(q) === key).length;
     const li = document.createElement("li");
-    li.textContent = t().startCategory(td(count), categoryLabel(key));
+    li.textContent = t().startCategory(count, categoryLabel(key));
     list.appendChild(li);
   }
 
@@ -586,6 +586,11 @@ function setQuizLanguage(lang) {
     langBtn.hidden = false;
   }
   updateDir();
+  const startList = $("start-list");
+  if (startList) {
+    startList.dir = currentLang === "en" ? "ltr" : "rtl";
+    startList.style.textAlign = currentLang === "en" ? "left" : "right";
+  }
   $("quiz-title").textContent = pick(quiz.title) || UI.quizFallbackTitle;
   const subtitle = pick(quiz.subtitle);
   $("quiz-subtitle").textContent = subtitle;
@@ -748,7 +753,7 @@ function buildStandaloneHtml() {
   const withHome = data.withHome;
 
   const homeHtml = withHome
-    ? '<a href="index.html" class="bg-slate-700 hover:bg-slate-600 text-white font-semibold py-2 px-4 rounded-xl text-sm transition">🏠 Home</a>'
+    ? '<a href="index.html" id="home-link" class="bg-slate-700 hover:bg-slate-600 text-white font-semibold py-2 px-4 rounded-xl text-sm transition">🏠 ماڵەوە</a>'
     : '';
   const langHtml = bilingual
     ? '<button type="button" id="lang-btn" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 font-semibold px-4 py-2 rounded-xl text-sm transition">🌐 English</button>'
@@ -821,20 +826,20 @@ ${topbar}
 "use strict";
 const DATA = JSON.parse(document.getElementById("quiz-data").textContent);
 const UI = {
-  en: { startCount: n => \`This quiz has \${n} questions:\`, startCategory: (n, cat) => \`• \${n} questions from \${cat}\`,
+  en: { startCount: n => \`This quiz has \${n} \${n === 1 ? "question" : "questions"}:\`, startCategory: (n, cat) => \`• \${n} \${n === 1 ? "question" : "questions"} from \${cat}\`,
     startBtn: "Start Quiz", counter: (i, n) => \`Question \${i} of \${n}\`, prev: "Previous", next: "Next Question",
     finish: "Show Results & Explanations", resultsTitle: "Quiz Results", restart: "Try Again",
     reviewHeading: "Review and Explanations:", correct: "✓ Correct", wrong: "✗ Wrong", questionShort: i => \`Question \${i}\`,
     yourAnswer: "Your answer: ", correctAnswer: "Correct answer: ", explanation: "Explanation: ", noAnswer: "No answer given",
     mustSelect: "Please select an option first!", score: (s, t) => \`\${s} of \${t} (\${Math.round((s / t) * 100)}%)\`,
-    categoryScore: (cat, s, t) => \`\${cat}: \${s} of \${t}\`, langLabel: "🌐 English" },
-  ku: { startCount: n => \`ئەم تاقیکردنەوەیە پێکدێت لە \${td(n)} پرسیار:\`, startCategory: (n, cat) => \`• \${td(n)} پرسیار لە \${cat}\`,
+    categoryScore: (cat, s, t) => \`\${cat}: \${s} of \${t}\`, langLabel: "🌐 English", homeLabel: "🏠 Home" },
+  ku: { startCount: n => \`ئەم تاقیکردنەوەیە پێکدێت لە \${n === 1 ? "پرسیارێک" : td(n) + " پرسیار"}:\`, startCategory: (n, cat) => \`• \${n === 1 ? "پرسیارێک" : td(n) + " پرسیار"} لە \${cat}\`,
     startBtn: "دەستپێکردنی تاقیکردنەوە", counter: (i, n) => \`پرسیاری \${td(i)} لە \${td(n)}\`, prev: "پێشوو", next: "پرسیاری داهاتوو",
     finish: "پیشاندانی ئەنجام و ڕوونکردنەوە", resultsTitle: "ئەنجامی تاقیکردنەوە", restart: "دووبارە ئەنجامدانەوە",
     reviewHeading: "پێداچوونەوە و ڕوونکردنەوەی پرسیارەکان:", correct: "✓ ڕاستە", wrong: "✗ هەڵەیە", questionShort: i => \`پرسیاری \${td(i)}\`,
     yourAnswer: "وەڵامی تۆ: ", correctAnswer: "وەڵامی ڕاست: ", explanation: "ڕوونکردنەوە: ", noAnswer: "هیچ وەڵامێک نەدراوە",
     mustSelect: "تکایە سەرەتا یەکێک لە بژاردەکان هەڵبژێرە!", score: (s, t) => \`\${td(s)} لە \${td(t)} (\${Math.round((s / t) * 100)}%)\`,
-    categoryScore: (cat, s, t) => \`\${cat}: \${td(s)} لە \${td(t)}\`, langLabel: "🌐 کوردی" }
+    categoryScore: (cat, s, t) => \`\${cat}: \${td(s)} لە \${td(t)}\`, langLabel: "🌐 کوردی", homeLabel: "🏠 ماڵەوە" }
 };
 let currentLang = DATA.bilingual ? "ku" : "en";
 const $ = id => document.getElementById(id);
@@ -851,7 +856,7 @@ function prepare(){ categoryOrder=[...new Set(questions.map(catKey))]; categoryC
 function catLabel(key){ const f=questions.find(q=>catKey(q)===key); return f?pick(f.category):key; }
 function createQuiz(){ const out=[]; for(const c of categoryOrder){ for(const q of shuffle(questions.filter(x=>catKey(x)===c))){ const order=shuffle(q.optionsKu.map((_,i)=>i)); out.push({category:q.category,categoryKey:c,question:q.question,explanation:q.explanation,optionsKu:order.map(i=>q.optionsKu[i]),optionsEn:order.map(i=>q.optionsEn[i]),correct:order.indexOf(q.correct)}); } } return out; }
 function optionAt(q,i){ return currentLang==="en" ? (q.optionsEn[i]||q.optionsKu[i]||"") : (q.optionsKu[i]||q.optionsEn[i]||""); }
-function setLang(lang){ currentLang=lang; document.documentElement.lang=lang; document.documentElement.dir=lang==="en"?"ltr":"rtl"; const b=$("lang-btn"); if(b) b.textContent = lang==="en" ? "🌐 کوردی" : "🌐 English"; $("quiz-title").textContent=pick(DATA.title)||"Quiz"; const sub=pick(DATA.subtitle); $("quiz-subtitle").textContent=sub; $("quiz-subtitle").className=sub?"text-slate-400 text-sm sm:text-base":"hidden"; $("results-title").textContent=t().resultsTitle; $("review-heading").textContent=t().reviewHeading; $("restart-btn").textContent=t().restart; if(!$("start-screen").classList.contains("hidden")) renderStart(); if(!$("quiz-screen").classList.contains("hidden")) loadQuestion(); if(!$("results-screen").classList.contains("hidden")) showResults(); }
+function setLang(lang){ currentLang=lang; document.documentElement.lang=lang; document.documentElement.dir=lang==="en"?"ltr":"rtl"; const b=$("lang-btn"); if(b) b.textContent = lang==="en" ? "🌐 کوردی" : "🌐 English"; const hl=$("home-link"); if(hl) hl.textContent=t().homeLabel; const sl=$("start-list"); if(sl){ sl.dir=lang==="en"?"ltr":"rtl"; sl.style.textAlign=lang==="en"?"left":"right"; } $("quiz-title").textContent=pick(DATA.title)||"Quiz"; const sub=pick(DATA.subtitle); $("quiz-subtitle").textContent=sub; $("quiz-subtitle").className=sub?"text-slate-400 text-sm sm:text-base":"hidden"; $("results-title").textContent=t().resultsTitle; $("review-heading").textContent=t().reviewHeading; $("restart-btn").textContent=t().restart; if(!$("start-screen").classList.contains("hidden")) renderStart(); if(!$("quiz-screen").classList.contains("hidden")) loadQuestion(); if(!$("results-screen").classList.contains("hidden")) showResults(); }
 function renderStart(){ $("start-count").textContent=t().startCount(questions.length); const list=$("start-list"); list.replaceChildren(); for(const key of categoryOrder){ const n=questions.filter(q=>catKey(q)===key).length; const li=document.createElement("li"); li.textContent=t().startCategory(n,catLabel(key)); list.appendChild(li); } for(const line of DATA.intro){ const text=pick(line); if(!text) continue; const li=document.createElement("li"); li.textContent="• "+text; list.appendChild(li); } $("start-btn").textContent=t().startBtn; }
 function loadQuestion(){ const q=quizQuestions[currentQuestionIndex]; $("question-counter").textContent=t().counter(currentQuestionIndex+1,quizQuestions.length); $("progress-bar").style.width=(((currentQuestionIndex+1)/quizQuestions.length)*100)+"%"; const color=categoryColor.get(q.categoryKey)||COLORS[1]; const badge=$("category-badge"); badge.textContent=pick(q.category); badge.className=color.bg+" "+color.text+" px-3 py-1 rounded-full text-xs border "+color.border; $("question-text").textContent=td(currentQuestionIndex+1)+". "+pick(q.question); const c=$("options-container"); c.replaceChildren(); q.optionsKu.forEach((_,i)=>{ const b=document.createElement("button"); const sel=userAnswers[currentQuestionIndex]===i; b.type="button"; b.className="w-full p-4 rounded-xl border transition duration-200 font-medium text-start "+(sel?"bg-emerald-700 border-emerald-400 text-white":"bg-slate-700/60 hover:bg-slate-700 border-slate-600 text-slate-200"); b.textContent=String.fromCharCode(65+i)+") "+optionAt(q,i); b.addEventListener("click",()=>selectOption(i)); c.appendChild(b); }); const p=$("prev-btn"), n=$("next-btn"); p.textContent=t().prev; n.textContent=currentQuestionIndex===quizQuestions.length-1?t().finish:t().next; p.classList.toggle("hidden",currentQuestionIndex===0); n.classList.toggle("hidden",userAnswers[currentQuestionIndex]===null); }
 function selectOption(i){ userAnswers[currentQuestionIndex]=i; loadQuestion(); }
@@ -909,6 +914,10 @@ $("download-btn").addEventListener("click", downloadQuiz);
 $("editor-btn").addEventListener("click", () => {
   $("quiz-view").classList.add("hidden");
   $("builder-view").classList.remove("hidden");
+  // the builder is English only, so it must always be LTR again
+  currentLang = "en";
+  document.documentElement.lang = "en";
+  document.documentElement.dir = "ltr";
 });
 
 /* Play the built quiz from the builder preview. */
