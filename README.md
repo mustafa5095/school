@@ -2,9 +2,6 @@
 
 If you find any mistake, either submit an issue here or message me on WhatsApp.
 
-
-
-.
 ## Private tool
 
 Quiz maker (not listed on the dashboard): [quiz-maker.html](https://mustafa5095.github.io/school/quiz-maker.html) — paste a quiz JSON to build a playable quiz, then download the result as a standalone HTML file with **Download Quiz**. The JSON format is in [quiz-template.json](quiz-template.json).
