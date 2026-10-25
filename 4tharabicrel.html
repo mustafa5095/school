@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{font-family:'Vazirmatn',sans-serif}
+button:focus-visible{outline:2px solid #34d399;outline-offset:3px}
+</style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col items-center justify-center p-4">
+<div id="quiz-view" class="max-w-3xl w-full bg-slate-800 rounded-2xl shadow-2xl p-6 sm:p-8 border border-slate-700">
+<div class="flex justify-between items-center mb-6 gap-3" dir="ltr"><div class="flex items-center gap-2"><a href="index.html" id="home-link" class="bg-slate-700 hover:bg-slate-600 text-white font-semibold py-2 px-4 rounded-xl text-sm transition">🏠 ماڵەوە</a></div><button type="button" id="lang-btn" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 font-semibold px-4 py-2 rounded-xl text-sm transition">🌐 English</button></div>
+<header class="text-center mb-8">
+<h1 id="quiz-title" class="text-2xl sm:text-3xl font-bold text-emerald-400 mb-2"></h1>
+<p id="quiz-subtitle" class="text-slate-400 text-sm sm:text-base"></p>
+<p id="author-line" class="text-slate-500 text-xs sm:text-sm mt-1"></p>
+</header>
+
+<div id="start-screen" class="text-center py-8">
+<div class="mb-6 bg-slate-700/50 p-6 rounded-xl border border-slate-600 inline-block">
+<p id="start-count" class="text-lg font-medium mb-2"></p>
+<ul id="start-list" class="text-slate-300 text-sm space-y-1 inline-block"></ul>
+</div>
+<div><button type="button" id="start-btn" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition text-lg"></button></div>
+</div>
+
+<div id="quiz-screen" class="hidden">
+<div class="flex justify-between items-center mb-4 text-sm text-slate-400 font-medium gap-3">
+<span id="question-counter"></span>
+<span id="category-badge" class="px-3 py-1 rounded-full text-xs border"></span>
+</div>
+<div class="w-full bg-slate-700/80 rounded-full h-2.5 mb-6 overflow-hidden border border-slate-600/50">
+<div id="progress-bar" class="bg-emerald-500 h-full transition-all duration-300 ease-out" style="width: 0%"></div>
+</div>
+<div class="mb-6"><h2 id="question-text" class="text-lg sm:text-xl font-semibold text-slate-100 leading-relaxed"></h2></div>
+<div id="options-container" class="space-y-3 mb-6"></div>
+<div class="flex justify-between items-center gap-3 mt-6 pt-4 border-t border-slate-700">
+<button type="button" id="prev-btn" class="bg-slate-700 hover:bg-slate-600 text-white font-semibold py-2 px-5 rounded-xl hidden"></button>
+<button type="button" id="next-btn" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2 px-6 rounded-xl hidden"></button>
+</div>
+</div>
+
+<div id="results-screen" class="hidden">
+<div class="text-center py-6 mb-6 border-b border-slate-700">
+<h2 id="results-title" class="text-3xl font-bold text-emerald-400 mb-2"></h2>
+<p id="score-display" class="text-4xl font-extrabold text-white mb-4"></p>
+<div id="category-scores" class="text-slate-300 mb-5 space-y-1"></div>
+<div id="after-test" class="hidden text-start bg-slate-900/50 border border-slate-700 rounded-xl p-4 mb-5 text-slate-200 text-sm sm:text-base leading-relaxed space-y-2"></div>
+<button type="button" id="restart-btn" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2 px-6 rounded-xl text-sm"></button>
+</div>
+<h3 id="review-heading" class="text-xl font-bold mb-4 text-slate-200"></h3>
+<div id="review-container" class="space-y-6 max-h-[60vh] overflow-y-auto pl-2"></div>
+</div>
+
+<footer class="mt-8 pt-4 border-t border-slate-700/60 text-center text-xs text-slate-500">Created by Mustafa Zardasht</footer>
+</div>
+
+<script id="quiz-data" type="application/json">{"bilingual":true,"lang":"both","contentMode":"follow","withHome":true,"title":{"ku":"تاقیکردنەوەی زمانی عەرەبی و بیرکردنەوە","en":"Arabic Language and General Knowledge Quiz"},"subtitle":{"ku":"هەموو پرسیارەکانی دوو فایلەکە","en":"All questions from the two supplied PDFs"},"intro":[{"ku":"ڕوونکردنەوەی وەڵامە ڕاست و هەڵەکان لە کۆتاییدا","en":"Correct and wrong answers are explained at the end"},{"ku":"پرسیار و وەڵامەکان لە هەر جارێکدا دەگۆڕدرێن","en":"Questions and answers are shuffled every time"}],"afterTest":{"ku":"سوپاس بۆ بەشداریکردنت!","en":"Thanks for taking the quiz!"},"author":{"ku":"","en":""},"questions":[{"category":{"ku":"القراءة وفهم النص","en":""},"question":{"ku":"ما نوع النمط الذي يغلب على النص؟","en":""},"explanation":{"ku":"","en":""},"optionsKu":["النمط السردي","النمط الوصفي","النمط الحواري","النمط الحجاجي"],"optionsEn":["النمط السردي","النمط الوصفي","النمط الحواري","النمط الحجاجي"],"correct":1},{"category":{"ku":"القراءة وفهم النص","en":""},"question":{"ku":"ما دلالة تعبير «الخرير الشفاف» حسب النص؟","en":""},"explanation":{"ku":"","en":""},"optionsKu":["شدة فيضان النهر","جفاف النهر","اعتياد الحقول على سماع صوت النهر","سرعة جريان النهر"],"optionsEn":["شدة فيضان النهر","جفاف النهر","اعتياد الحقول على سماع صوت النهر","سرعة جريان النهر"],"correct":2},{"category":{"ku":"القراءة وفهم النص","en":""},"question":{"ku":"لماذا استخدمت الأفعال المضارعة في النص؟","en":""},"explanation":{"ku":"","en":""},"optionsKu":["للوصف","للدلالة على المستقبل فقط","للتعبير عن الأمر","للدلالة على الماضي"],"optionsEn":["للوصف","للدلالة على المستقبل فقط","للتعبير عن الأمر","للدلالة على الماضي"],"correct":0},{"category":{"ku":"القراءة وفهم النص","en":""},"question":{"ku":"أيّ مما يأتي من مؤشرات النمط الوصفي؟","en":""},"explanation":{"ku":"","en":""},"optionsKu":["قلة النعوت","كثرة الأسئلة","غياب الصور المجازية","كثرة الصور المجازية"],"optionsEn":["قلة النعوت","كثرة الأسئلة","غياب الصور المجازية","كثرة الصور المجازية"],"correct":3},{"category":{"ku":"القراءة وفهم النص","en":""},"question":{"ku":"ما معنى كلمة «رشقَه»؟","en":""},"explanation":{"ku":"","en":""},"optionsKu":["سقاه","رماه به","حمله","تركه"],"optionsEn":["سقاه","رماه به","حمله","تركه"],"correct":1},{"category":{"ku":"القراءة وفهم النص","en":""},"question":{"ku":"ما المقصود بعبارة «مع الرشقات الأولى من وهج الشمس»؟","en":""},"explanation":{"ku":"","en":""},"optionsKu":["عند غروب الشمس","في وسط الليل","مع أشعة الشمس عند الشروق","عند هبوط المطر"],"optionsEn":["عند غروب الشمس","في وسط الليل","مع أشعة الشمس عند الشروق","عند هبوط المطر"],"correct":2},{"category":{"ku":"القراءة وفهم النص","en":""},"question":{"ku":"ما معنى كلمة «تزخر» في السياق؟","en":""},"explanation":{"ku":"","en":""},"optionsKu":["تمتلئ","تجف","تفرغ","تنبت"],"optionsEn":["تمتلئ","تجف","تفرغ","تنبت"],"correct":0},{"category":{"ku":"القراءة وفهم النص","en":""},"question":{"ku":"ما دلالة تعبير «أذرع النهر»؟","en":""},"explanation":{"ku":"","en":""},"optionsKu":["جسور النهر","أسماك النهر","ضفاف النهر فقط","المجاري المتفرعة من النهر"],"optionsEn":["جسور النهر","أسماك النهر","ضفاف النهر فقط","المجاري المتفرعة من النهر"],"correct":3},{"category":{"ku":"القراءة وفهم النص","en":""},"question":{"ku":"كيف وصف النص العلاقة بين الرجال والنهر؟","en":""},"explanation":{"ku":"","en":""},"optionsKu":["عداوة وصراعًا","علاقة عشق للكد والعمل والتعب","خوفًا من الماء","علاقة عابرة"],"optionsEn":["عداوة وصراعًا","علاقة عشق للكد والعمل والتعب","خوفًا من الماء","علاقة عابرة"],"correct":1},{"category":{"ku":"القراءة وفهم النص","en":""},"question":{"ku":"أي نوع من الوصف يغلب على النص؟","en":""},"explanation":{"ku":"","en":""},"optionsKu":["الوصف العلمي فقط","الوصف الداخلي فقط","الوصف الخارجي","الوصف الذاتي فقط"],"optionsEn":["الوصف العلمي فقط","الوصف الداخلي فقط","الوصف الخارجي","الوصف الذاتي فقط"],"correct":2},{"category":{"ku":"القراءة وفهم النص","en":""},"question":{"ku":"هل جاء الوصف في النص ذاتيًا أم موضوعيًا؟","en":""},"explanation":{"ku":"","en":""},"optionsKu":["ذاتيًا","موضوعيًا فقط","تاريخيًا","علميًا"],"optionsEn":["ذاتيًا","موضوعيًا فقط","تاريخيًا","علميًا"],"correct":0},{"category":{"ku":"النحو","en":""},"question":{"ku":"ما المقصود بالإضافة في النحو؟","en":""},"explanation":{"ku":"","en":""},"optionsKu":["ربط فعل بفاعل","ربط حرف بفعل","ربط جملتين","ربط اسمين أحدهما بالآخر"],"optionsEn":["ربط فعل بفاعل","ربط حرف بفعل","ربط جملتين","ربط اسمين أحدهما بالآخر"],"correct":3},{"category":{"ku":"النحو","en":""},"question":{"ku":"ما حركة المضاف إليه دائمًا؟","en":""},"explanation":{"ku":"","en":""},"optionsKu":["الرفع","الجر","النصب","السكون"],"optionsEn":["الرفع","الجر","النصب","السكون"],"correct":1},{"category":{"ku":"النحو","en":""},"question":{"ku":"في تركيب «وهج الشمس»، ما المضاف؟","en":""},"explanation":{"ku":"","en":""},"optionsKu":["الشمس","وهج الشمس","وهج","الشمس"],"optionsEn":["الشمس","وهج الشمس","وهج","الشمس"],"correct":2},{"category":{"ku":"النحو","en":""},"question":{"ku":"ما المضاف إليه في تركيب «عطش الثمار»؟","en":""},"explanation":{"ku":"","en":""},"optionsKu":["الثمار","عطش","الثمار","العطش"],"optionsEn":["الثمار","عطش","الثمار","العطش"],"correct":0},{"category":{"ku":"النحو","en":""},"question":{"ku":"أي تركيب يحتوي على ضمير متصل في محل جر بالإضافة؟","en":""},"explanation":{"ku":"","en":""},"optionsKu":["وهج الشمس","عطش الثمار","وقت الدرس","معلمهم"],"optionsEn":["وهج الشمس","عطش الثمار","وقت الدرس","معلمهم"],"correct":3},{"category":{"ku":"النحو","en":""},"question":{"ku":"ماذا يحدث لنون المثنى عند الإضافة؟","en":""},"explanation":{"ku":"","en":""},"optionsKu":["تضم","تحذف","تفتح","تبقى دائمًا"],"optionsEn":["تضم","تحذف","تفتح","تبقى دائمًا"],"correct":1},{"category":{"ku":"النحو","en":""},"question":{"ku":"ما وظيفة «الـ» في كلمة «الكتاب»؟","en":""},"explanation":{"ku":"","en":""},"optionsKu":["التنكير","التثنية","التعريف","الجمع"],"optionsEn":["التنكير","التثنية","التعريف","الجمع"],"correct":2},{"category":{"ku":"الإملاء","en":""},"question":{"ku":"كيف تكتب كلمة «المدينة» بعد دخول حرف الباء عليها؟","en":""},"explanation":{"ku":"","en":""},"optionsKu":["بالمدينة","بمدينة","بَالمدينة","بألـمدينة"],"optionsEn":["بالمدينة","بمدينة","بَالمدينة","بألـمدينة"],"correct":0},{"category":{"ku":"الإملاء","en":""},"question":{"ku":"كيف تُلفظ لام «الـ» في كلمة «الشمس»؟","en":""},"explanation":{"ku":"","en":""},"optionsKu":["تُلفظ ساكنة","تُلفظ مفتوحة دون إدغام","لا تُكتب اللام","لا تُلفظ اللام، ويُشدّد الحرف الشمسي"],"optionsEn":["تُلفظ ساكنة","تُلفظ مفتوحة دون إدغام","لا تُكتب اللام","لا تُلفظ اللام، ويُشدّد الحرف الشمسي"],"correct":3},{"category":{"ku":"گشتی","en":""},"question":{"ku":"مرۆڤی موسوڵمان جیهان چۆن دەبینێت؟","en":""},"explanation":{"ku":"","en":""},"optionsKu":["جیاواز","یەکگرتوو","بێ ئامانج","بێ یاسا"],"optionsEn":["جیاواز","یەکگرتوو","بێ ئامانج","بێ یاسا"],"correct":1},{"category":{"ku":"گشتی","en":""},"question":{"ku":"کێ گەردوونی دروست کردووە؟","en":""},"explanation":{"ku":"","en":""},"optionsKu":["مرۆڤ","سروشت","فریشتە","خودا"],"optionsEn":["مرۆڤ","سروشت","فریشتە","خودا"],"correct":3},{"category":{"ku":"زانست","en":""},"question":{"ku":"ئەگەر یاساکانی گەردوون بوەستن، چی ڕوودەدات؟","en":""},"explanation":{"ku":"","en":""},"optionsKu":["تێکچوون","ئارامی","زیادبوونی ڕووەک","هیچ"],"optionsEn":["تێکچوون","ئارامی","زیادبوونی ڕووەک","هیچ"],"correct":0},{"category":{"ku":"زانست","en":""},"question":{"ku":"کام دوو توخم ئاو پێک دەهێنن؟","en":""},"explanation":{"ku":"","en":""},"optionsKu":["ئۆکسجین و کاربۆن","هایدرۆجین و کاربۆن","ئۆکسجین و هایدرۆجین","نایترۆجین و ئۆکسجین"],"optionsEn":["ئۆکسجین و کاربۆن","هایدرۆجین و کاربۆن","ئۆکسجین و هایدرۆجین","نایترۆجین و ئۆکسجین"],"correct":2},{"category":{"ku":"زانست","en":""},"question":{"ku":"دارەکان چی دەکەن؟","en":""},"explanation":{"ku":"","en":""},"optionsKu":["زیادکردنی گەرمی","هەڵمژینی کاربۆن و دەرکردنی ئۆکسجین","ڕێگریکردن لە خۆر","کەمکردنەوەی ئۆکسجین"],"optionsEn":["زیادکردنی گەرمی","هەڵمژینی کاربۆن و دەرکردنی ئۆکسجین","ڕێگریکردن لە خۆر","کەمکردنەوەی ئۆکسجین"],"correct":1},{"category":{"ku":"گشتی","en":""},"question":{"ku":"مرۆڤ لە کوێوە هاتووە و بۆ کوێ دەگەڕێتەوە؟","en":""},"explanation":{"ku":"","en":""},"optionsKu":["سروشت","فریشتە","خودا","خۆی"],"optionsEn":["سروشت","فریشتە","خودا","خۆی"],"correct":2},{"category":{"ku":"گشتی","en":""},"question":{"ku":"زانایان و نەزانەکان یەکسانن؟","en":""},"explanation":{"ku":"","en":""},"optionsKu":["بەڵێ","نەخێر","هەندێک جار","نازانرێت"],"optionsEn":["بەڵێ","نەخێر","هەندێک جار","نازانرێت"],"correct":1},{"category":{"ku":"گشتی","en":""},"question":{"ku":"مرۆڤ لەسەر زەوی چییە؟","en":""},"explanation":{"ku":"","en":""},"optionsKu":["فریشتە","پێغەمبەر","پاشا","جێنشین"],"optionsEn":["فریشتە","پێغەمبەر","پاشا","جێنشین"],"correct":3},{"category":{"ku":"گشتی","en":""},"question":{"ku":"ئامانجی ژیان چییە؟","en":""},"explanation":{"ku":"","en":""},"optionsKu":["سامان","چێژ","تاقیکردنەوە و چاکە","بێ ئەرکی"],"optionsEn":["سامان","چێژ","تاقیکردنەوە و چاکە","بێ ئەرکی"],"correct":2},{"category":{"ku":"گشتی","en":""},"question":{"ku":"ژن و پیاو لە مرۆڤبووندا چۆنن؟","en":""},"explanation":{"ku":"","en":""},"optionsKu":["جیاوازن","پیاو باشترە","یەکسانن","ژن باشترە"],"optionsEn":["جیاوازن","پیاو باشترە","یەکسانن","ژن باشترە"],"correct":2}]}</script>
+<script>
+"use strict";
+const DATA = JSON.parse(document.getElementById("quiz-data").textContent);
+const UI = {
+  en: { startCount: n => `This quiz has ${n} ${n === 1 ? "question" : "questions"}:`, startCategory: (n, cat) => `• ${n} ${n === 1 ? "question" : "questions"} from ${cat}`,
+    startBtn: "Start Quiz", counter: (i, n) => `Question ${i} of ${n}`, prev: "Previous", next: "Next Question",
+    finish: "Show Results & Explanations", resultsTitle: "Quiz Results", restart: "Try Again",
+    reviewHeading: "Review and Explanations:", correct: "✓ Correct", wrong: "✗ Wrong", questionShort: i => `Question ${i}`,
+    yourAnswer: "Your answer: ", correctAnswer: "Correct answer: ", explanation: "Explanation: ", noAnswer: "No answer given",
+    mustSelect: "Please select an option first!", score: (s, t) => `${s} of ${t} (${Math.round((s / t) * 100)}%)`,
+    categoryScore: (cat, s, t) => `${cat}: ${s} of ${t}`, langLabel: "🌐 English", homeLabel: "🏠 Home", authorLabel: "Quiz Author" },
+  ku: { startCount: n => `ئەم تاقیکردنەوەیە پێکدێت لە ${n === 1 ? "پرسیارێک" : td(n) + " پرسیار"}:`, startCategory: (n, cat) => `• ${n === 1 ? "پرسیارێک" : td(n) + " پرسیار"} لە ${cat}`,
+    startBtn: "دەستپێکردنی تاقیکردنەوە", counter: (i, n) => `پرسیاری ${td(i)} لە ${td(n)}`, prev: "پێشوو", next: "پرسیاری داهاتوو",
+    finish: "پیشاندانی ئەنجام و ڕوونکردنەوە", resultsTitle: "ئەنجامی تاقیکردنەوە", restart: "دووبارە ئەنجامدانەوە",
+    reviewHeading: "پێداچوونەوە و ڕوونکردنەوەی پرسیارەکان:", correct: "✓ ڕاستە", wrong: "✗ هەڵەیە", questionShort: i => `پرسیاری ${td(i)}`,
+    yourAnswer: "وەڵامی تۆ: ", correctAnswer: "وەڵامی ڕاست: ", explanation: "ڕوونکردنەوە: ", noAnswer: "هیچ وەڵامێک نەدراوە",
+    mustSelect: "تکایە سەرەتا یەکێک لە بژاردەکان هەڵبژێرە!", score: (s, t) => `${td(s)} لە ${td(t)} (${Math.round((s / t) * 100)}%)`,
+    categoryScore: (cat, s, t) => `${cat}: ${td(s)} لە ${td(t)}`, langLabel: "🌐 کوردی", homeLabel: "🏠 ماڵەوە", authorLabel: "نووسەری تاقیکردنەوە" }
+};
+let currentLang = DATA.lang === "en" ? "en" : "ku";
+const contentMode = (DATA.contentMode === "en" || DATA.contentMode === "ku") ? DATA.contentMode : "follow";
+const $ = id => document.getElementById(id);
+function safeText(v){ return v == null ? "" : String(v).trim(); }
+function contentLang(){ return contentMode==="follow" ? currentLang : contentMode; }
+function tdLang(v,lang){ const s=String(v); if(lang!=="ku") return s; return s.replace(/[0-9]/g,d=>"٠١٢٣٤٥٦٧٨٩"[Number(d)]); }
+function td(v){ return tdLang(v,currentLang); }
+function tdc(v){ return tdLang(v,contentLang()); }
+function pickIn(p,lang){ if(!p||typeof p!=="object") return safeText(p); return safeText(p[lang])||safeText(p.ku)||safeText(p.en)||""; }
+function pick(p){ return pickIn(p,currentLang); }
+function pickContent(p){ return pickIn(p,contentLang()); }
+function t(){ return UI[currentLang]; }
+const RTL_RE=/[֐-׿؀-ۿݐ-ݿࢠ-ࣿיִ-﷿ﹰ-﻿]/;
+function detectDir(text){ return RTL_RE.test(safeText(text))?"rtl":"ltr"; }
+function applyDirection(){
+  const root=$("quiz-view"); if(!root) return;
+  root.querySelectorAll("*").forEach(el=>{ let text=""; for(const n of el.childNodes) if(n.nodeType===3) text+=n.nodeValue; if(!safeText(text)) return; const lang=el.hasAttribute("data-content")?contentLang():currentLang; el.dir=lang==="ku"?"rtl":detectDir(text); });
+  const list=$("start-list"); if(list){ const first=list.firstElementChild; const d=contentLang()==="ku"?"rtl":(first&&first.dir?first.dir:"ltr"); list.dir=d; list.style.textAlign=d==="rtl"?"right":"left"; }
+}
+function updateDir(){ document.documentElement.dir=currentLang==="ku"?"rtl":"ltr"; document.documentElement.lang=currentLang; }
+function renderAuthor(){ const el=$("author-line"); const name=pick(DATA.author); el.textContent=name?t().authorLabel+" - "+name:""; }
+function shuffle(a){ const r=[...a]; for(let i=r.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [r[i],r[j]]=[r[j],r[i]]; } return r; }
+const COLORS=[{bg:"bg-sky-900/60",text:"text-sky-300",border:"border-sky-700"},{bg:"bg-emerald-900/60",text:"text-emerald-300",border:"border-emerald-700"},{bg:"bg-amber-900/60",text:"text-amber-300",border:"border-amber-700"},{bg:"bg-violet-900/60",text:"text-violet-300",border:"border-violet-700"},{bg:"bg-rose-900/60",text:"text-rose-300",border:"border-rose-700"},{bg:"bg-cyan-900/60",text:"text-cyan-300",border:"border-cyan-700"}];
+const questions = DATA.questions;
+let categoryOrder=[], categoryColor=new Map(), quizQuestions=[], userAnswers=[], currentQuestionIndex=0;
+function catKey(q){ return q.category.ku||q.category.en||"—"; }
+function prepare(){ categoryOrder=[...new Set(questions.map(catKey))]; categoryColor=new Map(categoryOrder.map((k,i)=>[k,COLORS[i%COLORS.length]])); }
+function catLabel(key){ const f=questions.find(q=>catKey(q)===key); return f?pickContent(f.category):key; }
+function createQuiz(){ const out=[]; for(const c of categoryOrder){ for(const q of shuffle(questions.filter(x=>catKey(x)===c))){ const order=shuffle(q.optionsKu.map((_,i)=>i)); out.push({category:q.category,categoryKey:c,question:q.question,explanation:q.explanation,optionsKu:order.map(i=>q.optionsKu[i]),optionsEn:order.map(i=>q.optionsEn[i]),correct:order.indexOf(q.correct)}); } } return out; }
+function optionAt(q,i){ return contentLang()==="en" ? (q.optionsEn[i]||q.optionsKu[i]||"") : (q.optionsKu[i]||q.optionsEn[i]||""); }
+function setLang(lang){ currentLang=lang; const b=$("lang-btn"); if(b) b.textContent = lang==="en" ? "🌐 کوردی" : "🌐 English"; const hl=$("home-link"); if(hl) hl.textContent=t().homeLabel; $("quiz-title").textContent=pick(DATA.title)||"Quiz"; const sub=pick(DATA.subtitle); $("quiz-subtitle").textContent=sub; $("quiz-subtitle").className=sub?"text-slate-400 text-sm sm:text-base":"hidden"; $("results-title").textContent=t().resultsTitle; $("review-heading").textContent=t().reviewHeading; $("restart-btn").textContent=t().restart; renderAuthor(); if(!$("start-screen").classList.contains("hidden")) renderStart(); if(!$("quiz-screen").classList.contains("hidden")) loadQuestion(); if(!$("results-screen").classList.contains("hidden")) showResults(); updateDir(); applyDirection(); }
+function renderStart(){ $("start-count").textContent=t().startCount(questions.length); const list=$("start-list"); list.replaceChildren(); for(const key of categoryOrder){ const n=questions.filter(q=>catKey(q)===key).length; const li=document.createElement("li"); li.setAttribute("data-content",""); li.textContent=t().startCategory(n,catLabel(key)); list.appendChild(li); } for(const line of DATA.intro){ const text=pick(line); if(!text) continue; const li=document.createElement("li"); li.textContent="• "+text; list.appendChild(li); } $("start-btn").textContent=t().startBtn; }
+function renderAfterTest(){ const box=$("after-test"); const text=pick(DATA.afterTest); box.replaceChildren(); box.classList.toggle("hidden",!text); if(!text) return; for(const line of text.split("\n")){ if(!safeText(line)) continu
